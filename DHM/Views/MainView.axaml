@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:DHM.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="DHM.Views.MainView"
+             x:DataType="vm:MainViewModel">
+  <Design.DataContext>
+    <!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+    <vm:MainViewModel />
+  </Design.DataContext>
+
+
+  <StackPanel>
+
+    <Button Command="{Binding parseCommand}" HorizontalAlignment="Center">Parse Json</Button>
+    <TextBox Text="{Binding jsonIndexInput}" Width="20" HorizontalAlignment="Left"></TextBox>
+    <Button Command="{Binding jsonIndexChange}">Lookup</Button>
+    
+    <TextBlock>Factoid Parser</TextBlock>
+    
+    <TextBlock Text="{Binding parseMessage}"></TextBlock>
+
+
+    <Button Command="{Binding nextEntry}">Next Entry</Button>
+    <Button Command="{Binding previousEntry}">Previous Entry</Button>
+    <TextBlock Text="{Binding displayText}" Foreground="Green"></TextBlock>
+    <TextBlock Text="{Binding objectName}"></TextBlock>
+    <TextBlock Text="{Binding createdBy}"></TextBlock>
+    <TextBlock Text="{Binding createdWhen}"></TextBlock>
+    <TextBlock Text="{Binding modifiedBy}"></TextBlock>
+    <TextBlock Text="{Binding modifiedWhen}"></TextBlock>
+    <!--    <TextBlock Text="{Binding jsonObjectIndex}"></TextBlock> -->
+
+    <TextBlock Text="{Binding statementCount}" Foreground="Green"></TextBlock>
+    <TextBlock Text="{Binding statementObjectType}"></TextBlock>
+
+
+
+    <TextBlock Text="{Binding statementID}"></TextBlock>
+    <TextBlock Text="{Binding statementName}"></TextBlock>
+    <TextBlock Text="{Binding statementStartDate}"></TextBlock>
+    <TextBlock Text="{Binding statementEndDate}"></TextBlock>
+    <TextBlock Text="{Binding statementNotes}"></TextBlock>
+    <TextBlock Text="{Binding statementInternalNotes}"></TextBlock>
+    <TextBlock Text="{Binding statementHeadStatement}"></TextBlock>
+
+    <Button Command="{Binding nextStatement}">Next Statement</Button>
+    <Button Command="{Binding previousStatement}">Previous Statement</Button>
+
+
+    <TextBlock Text="{Binding currentFactoid.id, StringFormat='ID: {0}'}"></TextBlock>
+    <TextBlock Text="{Binding currentFactoid.name, StringFormat='Name: {0}'}"></TextBlock>
+    <TextBlock Text="{Binding currentFactoid.created_when, StringFormat='Created: {0}'}"></TextBlock>
+    <TextBlock Text="{Binding currentFactoid.created_by, StringFormat='Created by: {0}'}"></TextBlock>
+    <TextBlock Text="{Binding currentFactoid.modified_when, StringFormat='Modified: {0}'}"></TextBlock>
+    <TextBlock Text="{Binding currentFactoid.modified_by, StringFormat='Modified by: {0}'}"></TextBlock>
+
+
+
+
+  </StackPanel>
+  
+
+</UserControl>
