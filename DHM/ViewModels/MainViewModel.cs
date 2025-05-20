@@ -9,6 +9,8 @@ using System.IO;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using DHM.Views;
+using System;
+using System.Linq;
 
 
 namespace DHM.ViewModels;
@@ -32,8 +34,6 @@ public class MainViewModel : ViewModelBase
     [Reactive] public string objectName { get; set; } = "Object Name";
     [Reactive] public int jsonObjectIndex { get; set; } = 0;
 
-
-
     [Reactive] public string statementCount { get; set; } = "Statement Count";
 
     [Reactive] public int statementIndex { get; set; } = 0;
@@ -54,6 +54,14 @@ public class MainViewModel : ViewModelBase
 
 
 
+    [Reactive] public string filterResults { get; set; }
+
+
+
+    private List<int> queryEntries = new List<int>();  
+ 
+
+
     public ICommand parseCommand { get; }
 
     public ICommand nextEntry { get; }
@@ -64,6 +72,7 @@ public class MainViewModel : ViewModelBase
 
     public ICommand jsonIndexChange { get; }    
 
+    public ICommand lookupFilterCmd { get; }
 
 
     public async void getJson()
@@ -78,10 +87,7 @@ public class MainViewModel : ViewModelBase
         });     
          */
 
-
-
-
-        factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Code Projects\\jsonParse\\jsonParse\\Models\\factoidfull.json");
+        factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Coding\\jsonParse\\jsonParse\\Models\\factoidfull.json");
         UpdateJsonDisplay();
         parseMessage = "Sucessfully Parsed JSON with " + factoids.Count.ToString() + " Entries";
     }
@@ -134,17 +140,64 @@ public class MainViewModel : ViewModelBase
 
     public void updateJsonIndex () {
 
-        if(int.Parse(jsonIndexInput) < factoids.Count - 1)
+        try
         {
-            jsonObjectIndex = int.Parse(jsonIndexInput);
-            UpdateJsonDisplay();
+            if (int.Parse(jsonIndexInput) < factoids.Count - 1)
+            {
+                jsonObjectIndex = int.Parse(jsonIndexInput);
+                UpdateJsonDisplay();
+            }
         }
-    
-
-    
+        catch (Exception Ex)
+        {
+            jsonIndexInput = Ex.Message;
+        }
     }
 
+    public void LookupFilter()
+    {
+        int count = 0;
+        filterResults = string.Empty;
 
+        int stringLength = 0;
+
+        string query = jsonIndexInput;
+
+      //  ObservableCollection<Factoid> filteredCollection = new ObservableCollection<Factoid>();
+
+        foreach (Factoid factoid in factoids)
+        {
+
+            if (factoid.name.Contains(query)) {
+              //  filterResults += count + ", ";
+                queryEntries.Add(count);
+                stringLength += count.ToString().Length;
+
+               //filteredCollection.Add(factoid); 
+            }
+
+            count++;
+
+
+        }
+
+        foreach(int entry in queryEntries)
+        {
+            filterResults += entry + ", ";
+
+            if (stringLength > 80)
+            {
+                filterResults += "\n";
+                stringLength = 0;
+
+            }
+
+
+        }
+
+
+        filterResults += queryEntries;
+    }
 
     private void UpdateJsonDisplay()
     {
@@ -188,8 +241,6 @@ public class MainViewModel : ViewModelBase
                 statementInternalNotes = "Internal Notes: ";
                 statementHeadStatement = "Head Statement: ";
             }
-
-
         }
 
     }
@@ -197,10 +248,7 @@ public class MainViewModel : ViewModelBase
 
     public MainViewModel() {
 
-        parseCommand = ReactiveCommand.Create(() =>
-        {
-            getJson();
-        });
+        parseCommand = ReactiveCommand.Create(() => {getJson();});
 
         nextEntry = ReactiveCommand.Create(() => {selectNextEntry();});
 
@@ -212,10 +260,10 @@ public class MainViewModel : ViewModelBase
 
 
         jsonIndexChange = ReactiveCommand.Create(() => {  updateJsonIndex(); });
-    
 
-
-}
+        lookupFilterCmd = ReactiveCommand.Create(() => { LookupFilter(); }); 
+   
+    }
 
 
 }

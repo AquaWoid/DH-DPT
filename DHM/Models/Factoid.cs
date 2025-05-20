@@ -101,7 +101,6 @@ namespace DHM.Models
         public HandlungAusgefuehrtVonCertainty? Handlung_ausgeführt_von { get; set; }
         public PersonCertainty? person { get; set; }
         public GenanntePersonCertainty? genannte_Person { get; set; }
-
         public ProduktCertainty? Produkt { get; set; }
 
     }

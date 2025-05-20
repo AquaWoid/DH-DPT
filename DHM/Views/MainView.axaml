@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:DHM.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="DHM.Views.MainView"
              x:DataType="vm:MainViewModel">
   <Design.DataContext>
@@ -16,8 +16,9 @@
   <StackPanel>
 
     <Button Command="{Binding parseCommand}" HorizontalAlignment="Center">Parse Json</Button>
-    <TextBox Text="{Binding jsonIndexInput}" Width="20" HorizontalAlignment="Left"></TextBox>
+    <TextBox Text="{Binding jsonIndexInput}"></TextBox>
     <Button Command="{Binding jsonIndexChange}">Lookup</Button>
+    <Button Command="{Binding lookupFilterCmd}">Filter</Button>
     
     <TextBlock>Factoid Parser</TextBlock>
     
@@ -49,6 +50,9 @@
 
     <Button Command="{Binding nextStatement}">Next Statement</Button>
     <Button Command="{Binding previousStatement}">Previous Statement</Button>
+
+
+    <TextBlock Text="{Binding filterResults}" Foreground="Red">Filtered Results</TextBlock>
 
 
     <TextBlock Text="{Binding currentFactoid.id, StringFormat='ID: {0}'}"></TextBlock>
