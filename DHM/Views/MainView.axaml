@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:DHM.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
              x:Class="DHM.Views.MainView"
              x:DataType="vm:MainViewModel">
   <Design.DataContext>
@@ -24,11 +24,11 @@
     
     <TextBlock Text="{Binding parseMessage}"></TextBlock>
 
-
+    <ComboBox ItemsSource="{Binding publicQuaryEntries}" SelectedItem="{Binding cboSelect}" SelectedValue="{Binding jsonObjectIndex}"></ComboBox>
     <Button Command="{Binding nextEntry}">Next Entry</Button>
     <Button Command="{Binding previousEntry}">Previous Entry</Button>
     <TextBlock Text="{Binding displayText}" Foreground="Green"></TextBlock>
-    <TextBlock Text="{Binding objectName}"></TextBlock>
+    <TextBlock Text="{Binding objectName}" TextWrapping="WrapWithOverflow"></TextBlock>
     <TextBlock Text="{Binding createdBy}"></TextBlock>
     <TextBlock Text="{Binding createdWhen}"></TextBlock>
     <TextBlock Text="{Binding modifiedBy}"></TextBlock>
@@ -52,15 +52,21 @@
     <Button Command="{Binding previousStatement}">Previous Statement</Button>
 
 
-    <TextBlock Text="{Binding filterResults}" Foreground="Red">Filtered Results</TextBlock>
+    
 
 
-    <TextBlock Text="{Binding currentFactoid.id, StringFormat='ID: {0}'}"></TextBlock>
+    <!-- 
+    <TextBlock Text="{Binding filterResults}" TextWrapping="WrapWithOverflow" Foreground="Red">Filtered Results</TextBlock>
+        <TextBlock Text="{Binding currentFactoid.id, StringFormat='ID: {0}'}"></TextBlock>
     <TextBlock Text="{Binding currentFactoid.name, StringFormat='Name: {0}'}"></TextBlock>
     <TextBlock Text="{Binding currentFactoid.created_when, StringFormat='Created: {0}'}"></TextBlock>
     <TextBlock Text="{Binding currentFactoid.created_by, StringFormat='Created by: {0}'}"></TextBlock>
     <TextBlock Text="{Binding currentFactoid.modified_when, StringFormat='Modified: {0}'}"></TextBlock>
     <TextBlock Text="{Binding currentFactoid.modified_by, StringFormat='Modified by: {0}'}"></TextBlock>
+    
+    -->
+
+
 
 
 

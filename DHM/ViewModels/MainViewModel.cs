@@ -11,6 +11,7 @@ using Avalonia.Platform.Storage;
 using DHM.Views;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 
 namespace DHM.ViewModels;
@@ -20,6 +21,9 @@ public class MainViewModel : ViewModelBase
 
 
     public ObservableCollection<Factoid>? factoids;
+
+
+      ObservableCollection<Factoid> filteredCollection = new ObservableCollection<Factoid>();
 
     [Reactive] public Factoid currentFactoid { get; set; }
 
@@ -57,9 +61,22 @@ public class MainViewModel : ViewModelBase
     [Reactive] public string filterResults { get; set; }
 
 
+    private List<int> queryEntries = new List<int>();
 
-    private List<int> queryEntries = new List<int>();  
- 
+    [Reactive] public List<int> publicQuaryEntries { get; set; }
+
+
+    private int _cboSelect;
+
+    public int cboSelect
+    {
+        get => _cboSelect;
+        set  {
+            this.RaiseAndSetIfChanged(ref _cboSelect, value);
+            cboUpdateJsonIndex();
+            //UpdateJsonDisplay();
+        }
+    }
 
 
     public ICommand parseCommand { get; }
@@ -73,7 +90,6 @@ public class MainViewModel : ViewModelBase
     public ICommand jsonIndexChange { get; }    
 
     public ICommand lookupFilterCmd { get; }
-
 
     public async void getJson()
     {
@@ -110,8 +126,6 @@ public class MainViewModel : ViewModelBase
         if (jsonObjectIndex < 0 ) { jsonObjectIndex = 0; }
 
         UpdateJsonDisplay();
-    
-    
     }
 
 
@@ -120,8 +134,7 @@ public class MainViewModel : ViewModelBase
         if (statementIndex < factoids[jsonObjectIndex].has_statements.Count -1) {
             statementIndex++;
             UpdateJsonDisplay();
-        }    
-    
+        }       
     }
 
 
@@ -134,6 +147,7 @@ public class MainViewModel : ViewModelBase
     }
 
     public void removeStatement() {
+
         factoids[jsonObjectIndex].has_statements.RemoveAt(statementIndex);    
     
     }
@@ -158,45 +172,34 @@ public class MainViewModel : ViewModelBase
     {
         int count = 0;
         filterResults = string.Empty;
+        queryEntries.Clear();
 
         int stringLength = 0;
 
         string query = jsonIndexInput;
 
-      //  ObservableCollection<Factoid> filteredCollection = new ObservableCollection<Factoid>();
 
         foreach (Factoid factoid in factoids)
         {
 
-            if (factoid.name.Contains(query)) {
-              //  filterResults += count + ", ";
+            if(Regex.IsMatch(factoid.name, query))
+            {
                 queryEntries.Add(count);
                 stringLength += count.ToString().Length;
-
-               //filteredCollection.Add(factoid); 
+                filteredCollection.Add(factoid);
             }
 
             count++;
-
-
         }
 
         foreach(int entry in queryEntries)
         {
             filterResults += entry + ", ";
-
-            if (stringLength > 80)
-            {
-                filterResults += "\n";
-                stringLength = 0;
-
-            }
-
-
         }
 
 
         filterResults += queryEntries;
+        publicQuaryEntries = queryEntries;
     }
 
     private void UpdateJsonDisplay()
@@ -214,8 +217,6 @@ public class MainViewModel : ViewModelBase
 
             modifiedBy = "Modified By: " + currentFactoid?.modified_by;
             modifiedWhen = "Modified When: " + currentFactoid?.modified_when.ToString();
-
-
 
             statementCount = "Has Statements: " + currentFactoid.has_statements.Count.ToString();
 
@@ -245,6 +246,12 @@ public class MainViewModel : ViewModelBase
 
     }
 
+    private void cboUpdateJsonIndex()
+    {
+        jsonObjectIndex = cboSelect;
+        UpdateJsonDisplay();
+    }
+
 
     public MainViewModel() {
 
@@ -257,7 +264,6 @@ public class MainViewModel : ViewModelBase
         nextStatement = ReactiveCommand.Create(() => { selectNextStatement();});
 
         previousStatement = ReactiveCommand.Create(() => { selectPreviousStatement();});    
-
 
         jsonIndexChange = ReactiveCommand.Create(() => {  updateJsonIndex(); });
 
