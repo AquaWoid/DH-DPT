@@ -15,13 +15,14 @@ using System.Text.RegularExpressions;
 //using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.Data;
 
 
 namespace DHM.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
-
+    [Reactive] public string debugText { get; set; } = "Debug";
 
     [Reactive] public ObservableCollection<Factoid>? factoids { get; set; }
 
@@ -113,8 +114,8 @@ public class MainViewModel : ViewModelBase
 
 
 
-        factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Code Projects\\jsonParse\\jsonParse\\Models\\factoidfull.json");
-       // factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Coding\\jsonParse\\jsonParse\\Models\\factoidfull.json");
+       // factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Code Projects\\jsonParse\\jsonParse\\Models\\factoidfull.json");
+        factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Coding\\jsonParse\\jsonParse\\Models\\factoidfull.json");
         UpdateJsonDisplay();
         parseMessage = "Sucessfully Parsed JSON with " + factoids.Count.ToString() + " Entries";
     }
@@ -293,11 +294,61 @@ public class MainViewModel : ViewModelBase
     public void exportCsv()
     {
 
-       CsvExport.ExportCsv();
-        //CsvExport.DataTableToCsv(CsvExport.CreateDataTable(factoids));
-       
+        DataTable dt = constructDataTable(new List<string> {"name","created_by","created_when", "statements[0].__object_type__" });
+
+        //CsvExport.ExportCsv();
+
+        CsvExport.DataTableToCsv(dt);
+
+    }
+
+
+    public DataTable constructDataTable(List<string> filteredProperties)
+    {
+        DataTable dt = new DataTable();
+        List<object> filteredObjects = new List<object>();
+
+        foreach (string property in filteredProperties) { 
         
-        //CsvExport.DataTableToCsv(DataTableHelper.CreateFlattenedDataTable(factoids));
+            dt.Columns.Add(property);
+
+        }
+
+
+
+
+        foreach (Factoid factoid in factoids) {
+
+            filteredObjects.Clear();
+
+            foreach (string prop in filteredProperties)
+            {
+                if (prop == "name")
+                {
+                    filteredObjects.Add(factoid.name);
+                }
+                if (prop == "created_by")
+                {
+                    filteredObjects.Add(factoid.created_by);
+                }
+                if (prop == "created_when")
+                {
+                    filteredObjects.Add(factoid.created_when);
+                }
+                if (prop == "statements[0].__object_type__" && factoid.has_statements.Count > 0)
+                {
+                    filteredObjects.Add(factoid.has_statements[0].__object_type__);
+                }
+            }
+
+            dt.Rows.Add(filteredObjects.ToArray());
+        
+        }
+
+       // debugText += nameof(factoids[0].has_statements[0].Ausführende[0]);
+
+        return dt;
+
     }
 
     public MainViewModel() {

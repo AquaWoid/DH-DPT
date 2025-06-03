@@ -15,10 +15,16 @@
 
   <StackPanel>
 
+    <TextBox Text="{Binding debugText}"></TextBox>
+
     <Button Command="{Binding parseCommand}" HorizontalAlignment="Center">Parse Json</Button>
     <Button Command="{Binding jsonExportCommand}" HorizontalAlignment="Center">Export Json</Button>
     <Button Command="{Binding csvExportCommand}" HorizontalAlignment="Center">Export CSV</Button>
 
+    
+    
+    
+    
     
     <TextBox Text="{Binding jsonIndexInput}"></TextBox>
     <Button Command="{Binding jsonIndexChange}">Lookup</Button>
