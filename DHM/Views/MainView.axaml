@@ -16,6 +16,10 @@
   <StackPanel>
 
     <Button Command="{Binding parseCommand}" HorizontalAlignment="Center">Parse Json</Button>
+    <Button Command="{Binding jsonExportCommand}" HorizontalAlignment="Center">Export Json</Button>
+    <Button Command="{Binding csvExportCommand}" HorizontalAlignment="Center">Export CSV</Button>
+
+    
     <TextBox Text="{Binding jsonIndexInput}"></TextBox>
     <Button Command="{Binding jsonIndexChange}">Lookup</Button>
     <Button Command="{Binding lookupFilterCmd}">Filter</Button>
@@ -24,9 +28,12 @@
     
     <TextBlock Text="{Binding parseMessage}"></TextBlock>
 
-    <ComboBox ItemsSource="{Binding publicQuaryEntries}" SelectedItem="{Binding cboSelect}" SelectedValue="{Binding jsonObjectIndex}"></ComboBox>
-    <Button Command="{Binding nextEntry}">Next Entry</Button>
-    <Button Command="{Binding previousEntry}">Previous Entry</Button>
+    <ComboBox ItemsSource="{Binding publicQuaryEntries}" SelectedItem="{Binding cboSelect}" SelectedIndex="{Binding cboSelectedItem}" SelectedValue="{Binding jsonObjectIndex}"></ComboBox>
+    
+    <Button Command="{Binding nextEntry}" IsEnabled="{Binding uiEnabled}">Next Entry</Button>
+    <Button Command="{Binding previousEntry}" IsEnabled="{Binding uiEnabled}" >Previous Entry</Button>
+
+    
     <TextBlock Text="{Binding displayText}" Foreground="Green"></TextBlock>
     <TextBlock Text="{Binding objectName}" TextWrapping="WrapWithOverflow"></TextBlock>
     <TextBlock Text="{Binding createdBy}"></TextBlock>
@@ -52,7 +59,98 @@
     <Button Command="{Binding previousStatement}">Previous Statement</Button>
 
 
-    
+
+
+    <DataGrid Height="600"
+              ItemsSource="{Binding factoids}"
+              GridLinesVisibility="All"
+              BorderThickness="1"
+              BorderBrush="White"
+              CanUserReorderColumns="True"
+              CanUserResizeColumns="True"
+              x:Name="factoidDataGrid"
+              
+              >
+      
+      
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="ID" Binding="{Binding id}" />
+        <DataGridTextColumn Header="Name" Binding="{Binding name}"/>
+
+        
+
+        <!--        
+                <DataGridTextColumn Header="Source ID" Binding="{Binding source.id}" />
+        <DataGridTextColumn Header="Reviewed" Binding="{Binding review.reviewed}" />
+        <DataGridTextColumn Header="Reviewed By" Binding="{Binding review.reviewed_by}" />
+        <DataGridTextColumn Header="Review Notes" Binding="{Binding review.reviewed_notes}" />
+        <DataGridTextColumn Header="Problem Flagged" Binding="{Binding review.problem_flagged}" />
+        <DataGridTextColumn Header="Created By" Binding="{Binding created_by}" />
+        <DataGridTextColumn Header="Created When" Binding="{Binding created_when}" />
+        <DataGridTextColumn Header="Modified By" Binding="{Binding modified_by}" />
+        <DataGridTextColumn Header="Modified When" Binding="{Binding modified_when}" />        
+        
+        
+        
+        <DataGridTextColumn Header="Source Text" Binding="{Binding source.text}" Width="1*" />
+        
+        
+          <DataGridTextColumn Header="Source Pages Start" Binding="{Binding source.pages_start}" />
+        <DataGridTextColumn Header="Source Pages End" Binding="{Binding source.pages_end}" />
+        <DataGridTextColumn Header="Source Folio" Binding="{Binding source.folio}" />      
+        
+        
+        -->
+
+
+
+   
+        
+        
+        <DataGridTextColumn Header="Statement[0] Object Type" Binding="{Binding has_statements[0].__object_type__}" />
+        <DataGridTextColumn Header="Statement[0] Date Written" Binding="{Binding has_statements[0].start_date_written}" />
+        <DataGridTextColumn Header="Statement[0] Ort" Binding="{Binding has_statements[0].Ort_der_Handlung[0].label}" />
+        <DataGridTextColumn Header="Statement[0] Person" Binding="{Binding has_statements[0].Handlung_ausgeführt_von[0].label}" />
+        <DataGridTextColumn Header="Statement[0] Certainty" Binding="{Binding has_statements[0].certainty.certainty}" />
+
+        <DataGridTextColumn Header="Gender" Binding="{Binding has_statements[0].gender}" />
+        
+        <DataGridTextColumn Header="Forename" Binding="{Binding has_statements[0].forename}" />
+        <DataGridTextColumn Header="Surname" Binding="{Binding has_statements[0].surname}" />
+        <DataGridTextColumn Header="Role Name" Binding="{Binding has_statements[0].role_name}" />
+        <DataGridTextColumn Header="Add Name" Binding="{Binding has_statements[0].add_name}" />
+
+
+
+
+
+        <!--
+        
+           <DataGridTextColumn Header="Statement[1] Object Type" Binding="{Binding has_statements[1].__object_type__}" />
+        <DataGridTextColumn Header="Statement[1] Date Written" Binding="{Binding has_statements[1].start_date_written}" />
+        <DataGridTextColumn Header="Statement[1] Certainty" Binding="{Binding has_statements[1].certainty.certainty}" />
+
+        
+        <DataGridTextColumn Header="Statement[2] Object Type" Binding="{Binding has_statements[2].__object_type__}" />
+        <DataGridTextColumn Header="Statement[2] Date Written" Binding="{Binding has_statements[2].start_date_written}" />
+        <DataGridTextColumn Header="Statement[2] Certainty" Binding="{Binding has_statements[2].certainty.certainty}" />
+
+        
+        <DataGridTextColumn Header="Statement[3] Object Type" Binding="{Binding has_statements[3].__object_type__}" />
+        <DataGridTextColumn Header="Statement[3] Certainty" Binding="{Binding has_statements[3].certainty.certainty}" />     
+        
+        -->
+        
+
+
+        
+
+
+        
+        
+        
+      </DataGrid.Columns>
+    </DataGrid>
 
 
     <!-- 
@@ -65,10 +163,6 @@
     <TextBlock Text="{Binding currentFactoid.modified_by, StringFormat='Modified by: {0}'}"></TextBlock>
     
     -->
-
-
-
-
 
 
   </StackPanel>

@@ -81,6 +81,41 @@ namespace DHM.Models
         public string? label { get; set; }
     }
 
+    public class Produkt
+    {
+        public string? __object_type__ { get; set; }
+        public int? id { get; set; }
+        public string? label { get; set; }
+    }
+
+    public class HandlungAusgefuehrtVon
+    {
+        public string? __object_type__ { get; set; }
+        public int? id { get; set; }
+        public string? label { get; set; }
+    }
+
+    public class OrtDerHandlung
+    {
+        public string? __object_type__ { get; set; }
+        public int? id { get; set; }
+        public string? label { get; set; }
+    }
+
+    public class AusgefuehrteTaetigkeit
+    {
+        public string? __object_type__ { get; set; }
+        public int? id { get; set; }
+        public string? label { get; set; }
+    }
+
+    public class Ausfuehrende
+    {
+        public string? __object_type__ { get; set; }
+        public int? id { get; set; }
+        public string? label { get; set; }
+    }
+
     public class Statement
     {
         [JsonPropertyName("__object_type__")]
@@ -171,40 +206,7 @@ namespace DHM.Models
         public int? certainty { get; set; }
     }
 
-    public class Produkt
-    {
-        public string? __object_type__ { get; set; }
-        public int? id { get; set; }
-        public string? label { get; set; }
-    }
 
-    public class HandlungAusgefuehrtVon
-    {
-        public string? __object_type__ { get; set; }
-        public int? id { get; set; }
-        public string? label { get; set; }
-    }
-
-    public class OrtDerHandlung
-    {
-        public string? __object_type__ { get; set; }
-        public int? id { get; set; }
-        public string? label { get; set; }
-    }
-
-    public class AusgefuehrteTaetigkeit
-    {
-        public string? __object_type__ { get; set; }
-        public int? id { get; set; }
-        public string? label { get; set; }
-    }
-
-    public class Ausfuehrende
-    {
-        public string? __object_type__ { get; set; }
-        public int? id { get; set; }
-        public string? label { get; set; }
-    }
 
     public class Review
     {

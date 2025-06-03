@@ -12,6 +12,9 @@ using DHM.Views;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+//using System.Text.Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 
 namespace DHM.ViewModels;
@@ -20,16 +23,16 @@ public class MainViewModel : ViewModelBase
 {
 
 
-    public ObservableCollection<Factoid>? factoids;
+    [Reactive] public ObservableCollection<Factoid>? factoids { get; set; }
 
 
-      ObservableCollection<Factoid> filteredCollection = new ObservableCollection<Factoid>();
+    ObservableCollection<Factoid> filteredCollection = new ObservableCollection<Factoid>();
 
     [Reactive] public Factoid currentFactoid { get; set; }
 
 
     [Reactive] public string parseMessage { get; set; }
-    [Reactive] public string displayText {get; set;}
+    [Reactive] public string displayText { get; set; }
 
     [Reactive] public string createdWhen { get; set; } = "Created When";
     [Reactive] public string createdBy { get; set; } = "Created By";
@@ -64,6 +67,11 @@ public class MainViewModel : ViewModelBase
     private List<int> queryEntries = new List<int>();
 
     [Reactive] public List<int> publicQuaryEntries { get; set; }
+
+
+    [Reactive] public bool uiEnabled { get; set; } = true;
+
+    [Reactive] public int cboSelectedItem { get; set; }
 
 
     private int _cboSelect;
@@ -103,7 +111,10 @@ public class MainViewModel : ViewModelBase
         });     
          */
 
-        factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Coding\\jsonParse\\jsonParse\\Models\\factoidfull.json");
+
+
+        factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Code Projects\\jsonParse\\jsonParse\\Models\\factoidfull.json");
+       // factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Coding\\jsonParse\\jsonParse\\Models\\factoidfull.json");
         UpdateJsonDisplay();
         parseMessage = "Sucessfully Parsed JSON with " + factoids.Count.ToString() + " Entries";
     }
@@ -134,6 +145,7 @@ public class MainViewModel : ViewModelBase
         if (statementIndex < factoids[jsonObjectIndex].has_statements.Count -1) {
             statementIndex++;
             UpdateJsonDisplay();
+          
         }       
     }
 
@@ -200,6 +212,9 @@ public class MainViewModel : ViewModelBase
 
         filterResults += queryEntries;
         publicQuaryEntries = queryEntries;
+
+        uiEnabled = false;
+        cboSelect = queryEntries.First();
     }
 
     private void UpdateJsonDisplay()
@@ -253,6 +268,38 @@ public class MainViewModel : ViewModelBase
     }
 
 
+    public ICommand jsonExportCommand { get; }
+
+
+
+    public void ExportJson()
+    {
+
+        JsonSerializer serializer = new JsonSerializer();
+        serializer.NullValueHandling = NullValueHandling.Ignore;
+
+        using (StreamWriter sw = new StreamWriter("C:\\Users\\luwa0\\Desktop\\Code\\export.json"))
+        using (JsonTextWriter writer = new JsonTextWriter(sw))
+        {
+            writer.Formatting = Formatting.Indented;
+            serializer.Serialize(writer, factoids);
+
+        }
+   
+       
+    }
+
+    public ICommand csvExportCommand { get; }
+    public void exportCsv()
+    {
+
+       CsvExport.ExportCsv();
+        //CsvExport.DataTableToCsv(CsvExport.CreateDataTable(factoids));
+       
+        
+        //CsvExport.DataTableToCsv(DataTableHelper.CreateFlattenedDataTable(factoids));
+    }
+
     public MainViewModel() {
 
         parseCommand = ReactiveCommand.Create(() => {getJson();});
@@ -268,7 +315,11 @@ public class MainViewModel : ViewModelBase
         jsonIndexChange = ReactiveCommand.Create(() => {  updateJsonIndex(); });
 
         lookupFilterCmd = ReactiveCommand.Create(() => { LookupFilter(); }); 
-   
+
+        jsonExportCommand = ReactiveCommand.Create(() => { ExportJson(); });
+
+        csvExportCommand = ReactiveCommand.Create(() => { exportCsv(); });
+
     }
 
 
