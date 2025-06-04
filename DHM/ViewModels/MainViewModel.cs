@@ -26,6 +26,12 @@ using Avalonia.Data;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Primitives;
+using DynamicData;
+using System.Diagnostics;
+
+
 
 
 
@@ -33,325 +39,110 @@ namespace DHM.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
+    #region Variable Declarations
+
     [Reactive] public string debugText { get; set; } = "Debug";
 
     [Reactive] public ObservableCollection<Factoid>? factoids { get; set; }
 
 
-    ObservableCollection<Factoid> filteredCollection = new ObservableCollection<Factoid>();
-
-    [Reactive] public Factoid currentFactoid { get; set; }
+    [Reactive] public ObservableCollection<Factoid>? filteredCollection { get; set; } = new ObservableCollection<Factoid>();
 
 
     [Reactive] public string parseMessage { get; set; }
-    [Reactive] public string displayText { get; set; }
 
-    [Reactive] public string createdWhen { get; set; } = "Created When";
-    [Reactive] public string createdBy { get; set; } = "Created By";
-    [Reactive] public string modifiedBy { get; set; } = "Modified By";
-    [Reactive] public string modifiedWhen { get; set; } = "Modified When";
-    [Reactive] public string objectName { get; set; } = "Object Name";
-    [Reactive] public int jsonObjectIndex { get; set; } = 0;
-
-    [Reactive] public string statementCount { get; set; } = "Statement Count";
-
-    [Reactive] public int statementIndex { get; set; } = 0;
-
-    [Reactive] public string statementObjectType { get; set; } = "Statements";
-    [Reactive] public string statementID { get; set; }
-
-    [Reactive] public string statementName { get; set; }
-    [Reactive] public string statementStartDate { get; set; }
-    [Reactive] public string statementEndDate { get; set; }
-    [Reactive] public string statementNotes { get; set; }
-    [Reactive] public string statementInternalNotes { get; set; }
-    [Reactive] public string statementHeadStatement { get; set; }
-
-
-
-    [Reactive] public string jsonIndexInput { get; set; }
-
-
-
-    [Reactive] public string filterResults { get; set; }
-
-
-    private List<int> queryEntries = new List<int>();
-
-    [Reactive] public List<int> publicQuaryEntries { get; set; }
-
-
-    [Reactive] public bool uiEnabled { get; set; } = true;
-
-    [Reactive] public int cboSelectedItem { get; set; }
 
     [Reactive] public DataTable gridDataTable { get; set; }
 
-    [Reactive] public IDataGridCollectionView collectionView { get; set; }
 
-
-    private int _cboSelect;
-
-    public int cboSelect
-    {
-        get => _cboSelect;
-        set {
-            this.RaiseAndSetIfChanged(ref _cboSelect, value);
-            cboUpdateJsonIndex();
-            //UpdateJsonDisplay();
-        }
-    }
-
-
-    public ICommand parseCommand { get; }
-
-    public ICommand nextEntry { get; }
-    public ICommand previousEntry { get; }
-
-    public ICommand nextStatement { get; }
-    public ICommand previousStatement { get; }
-
-    public ICommand jsonIndexChange { get; }
-
-    public ICommand lookupFilterCmd { get; }
-
-    public async void getJson()
-    {
-
-        /*
-         
-            string path = await TopLevel.GetTopLevel(this).StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = "Open Factoid Json",
-            AllowMultiple = false
-        });     
-         */
-
-
-
-        // factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Code Projects\\jsonParse\\jsonParse\\Models\\factoidfull.json");
-        factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Coding\\jsonParse\\jsonParse\\Models\\factoidfull.json");
-        UpdateJsonDisplay();
-        parseMessage = "Sucessfully Parsed JSON with " + factoids.Count.ToString() + " Entries";
-    }
-
-
-    public void selectNextEntry()
-    {
-        statementIndex = 0;
-        jsonObjectIndex++;
-        if (jsonObjectIndex >= factoids.Count) { jsonObjectIndex = factoids.Count - 1; }
-
-        UpdateJsonDisplay();
-    }
-
-
-    public void selectPreviousEntry() {
-
-        statementIndex = 0;
-        jsonObjectIndex--;
-        if (jsonObjectIndex < 0) { jsonObjectIndex = 0; }
-
-        UpdateJsonDisplay();
-    }
-
-
-    public void selectNextStatement() {
-
-        if (statementIndex < factoids[jsonObjectIndex].has_statements.Count - 1) {
-            statementIndex++;
-            UpdateJsonDisplay();
-
-        }
-    }
-
-
-    public void selectPreviousStatement()
-    {
-        if (statementIndex > 0) {
-            statementIndex--;
-            UpdateJsonDisplay();
-        }
-    }
-
-    public void removeStatement() {
-
-        factoids[jsonObjectIndex].has_statements.RemoveAt(statementIndex);
-
-    }
-
-    public void updateJsonIndex() {
-
-        try
-        {
-            if (int.Parse(jsonIndexInput) < factoids.Count - 1)
-            {
-                jsonObjectIndex = int.Parse(jsonIndexInput);
-                UpdateJsonDisplay();
-            }
-        }
-        catch (Exception Ex)
-        {
-            jsonIndexInput = Ex.Message;
-        }
-    }
-
-    public void LookupFilter()
-    {
-        int count = 0;
-        filterResults = string.Empty;
-        queryEntries.Clear();
-
-        int stringLength = 0;
-
-        string query = jsonIndexInput;
-
-
-        foreach (Factoid factoid in factoids)
-        {
-
-            if (Regex.IsMatch(factoid.name, query))
-            {
-                queryEntries.Add(count);
-                stringLength += count.ToString().Length;
-                filteredCollection.Add(factoid);
-            }
-
-            count++;
-        }
-
-        foreach (int entry in queryEntries)
-        {
-            filterResults += entry + ", ";
-        }
-
-
-        filterResults += queryEntries;
-        publicQuaryEntries = queryEntries;
-
-        uiEnabled = false;
-        cboSelect = queryEntries.First();
-    }
-
-    private void UpdateJsonDisplay()
-    {
-        if (factoids != null)
-        {
-            currentFactoid = factoids[jsonObjectIndex];
-
-
-            displayText = "ID: " + currentFactoid.id.ToString() + " | " + jsonObjectIndex.ToString() + " / " + (factoids.Count - 1).ToString();
-            objectName = "Name: " + currentFactoid.name;
-            createdWhen = "Date Created: " + currentFactoid.created_when.ToString();
-
-            createdBy = "Created By: " + currentFactoid.created_by;
-
-            modifiedBy = "Modified By: " + currentFactoid?.modified_by;
-            modifiedWhen = "Modified When: " + currentFactoid?.modified_when.ToString();
-
-            statementCount = "Has Statements: " + currentFactoid.has_statements.Count.ToString();
-
-
-            if (currentFactoid.has_statements.Count != 0)
-            {
-                statementObjectType = "Object Type " + currentFactoid.has_statements[statementIndex].__object_type__;
-                statementID = "ID: " + currentFactoid.has_statements[statementIndex].id.ToString();
-                statementName = "Name: " + currentFactoid.has_statements[statementIndex].name;
-                statementStartDate = "Start Date: " + currentFactoid.has_statements[statementIndex].start_date_written;
-                statementEndDate = "End Date: " + currentFactoid.has_statements[statementIndex].end_date_written;
-                statementNotes = "Notes: " + currentFactoid.has_statements[statementIndex].notes;
-                statementInternalNotes = "Internal Notes: " + currentFactoid.has_statements[statementIndex].internal_notes;
-                statementHeadStatement = "Head Statement: " + currentFactoid.has_statements[statementIndex].head_statement.ToString();
-
-            } else
-            {
-                statementObjectType = "Object Type ";
-                statementName = "Name: ";
-                statementStartDate = "Start Date: ";
-                statementEndDate = "End Date: ";
-                statementNotes = "Notes: ";
-                statementInternalNotes = "Internal Notes: ";
-                statementHeadStatement = "Head Statement: ";
-            }
-        }
-
-    }
-
-    private void cboUpdateJsonIndex()
-    {
-        jsonObjectIndex = cboSelect;
-        UpdateJsonDisplay();
-    }
-
-
-    public ICommand jsonExportCommand { get; }
-
-
-
-    public void ExportJson()
-    {
-
-        JsonSerializer serializer = new JsonSerializer();
-        serializer.NullValueHandling = NullValueHandling.Ignore;
-
-        using (StreamWriter sw = new StreamWriter("C:\\Users\\luwa0\\Desktop\\Code\\export.json"))
-        using (JsonTextWriter writer = new JsonTextWriter(sw))
-        {
-            writer.Formatting = Formatting.Indented;
-            serializer.Serialize(writer, factoids);
-
-        }
-
-
-    }
+    public ObservableCollection<TableFilter> tableFilters { get; set; } = new ObservableCollection<TableFilter>();
 
     [Reactive] public DataView dataView { get; set; } = new DataView();
 
-    public Interaction<DataView, Unit> RequestDataGridUpdate = new Interaction<DataView, Unit>();
 
-    public ICommand csvExportCommand { get; }
-    public async void exportCsv()
+    List<string> tableColumns = new List<string>();
+
+
+    public DataTable tableData { get; set; }
+
+
+    [Reactive] public ObservableCollection<string> Columns { get; set; } = new ObservableCollection<string> { };
+
+
+    [Reactive] public ITreeDataGridSource GridSource { get; set; }
+
+
+    private ObservableCollection<Factoid> baseFactoids { get; set; }
+
+
+    [Reactive] public ObservableCollection<string> AvailableColumns { get; set; } = new ObservableCollection<string>();
+
+
+    [Reactive] public string columnNameSelected { get; set; }
+
+    #endregion
+
+
+    #region Data Handling
+
+    //Entry function to pull data from the factoid json
+    public async void getJson()
     {
 
-        DataTable dt = constructDataTable(new List<string> {"id", "name","created_by","created_when", "modified_when", "modified_by", "statements[0].__object_type__", "statements[0].start_date_written"});
+        factoids = await JsonParse.ParseJson<Factoid>("C:\\Users\\luwa0\\Documents\\Coding\\jsonParse\\jsonParse\\Models\\factoidfull.json");
 
-        //CsvExport.ExportCsv();
-        //gridDataTable = dt;
+        baseFactoids = factoids;
 
-        gridDataTable = dt;
+        // filteredCollection = factoids;
 
+        parseMessage = "Sucessfully Parsed JSON with " + factoids.Count.ToString() + " Entries";
 
-        CsvExport.DataTableToCsv(dt);
-
+        UpdateTableFilter();
     }
 
-    [Reactive] public ObservableCollection<DataGridColumn> Columns { get; set; }
-    [Reactive] public ObservableCollection<dynamic> Items { get; set; }
-
-
-
-    //[Reactive] public DataGridCollectionView view { get; set; } = new DataGridCollectionView();
-
-    public DataTable constructDataTable(List<string> filteredProperties)
+    //Json Export Function. Exports the edited Factoid as well as the filter settings
+    public void ExportJson()
     {
+        JsonExport.ExportJson<TableFilter>(tableFilters, "C:\\Users\\luwa0\\Desktop\\Code\\tableFilters.json");
+        JsonExport.ExportJson<Factoid>(factoids, "C:\\Users\\luwa0\\Desktop\\Code\\factoidsExport.json");
+    }
+
+    //CSV export. Look at the Utilities/CsvExport class for more info
+    public async void exportCsv()
+    {
+        CsvExport.DataTableToCsv(tableData);
+    }
+
+
+    #endregion
+
+
+    #region DataTable Handling
+
+    //Constructing the DataTable from the Factoid Collection
+    public DataTable constructDataTable(List<string> filteredProperties, ObservableCollection<Factoid> factoidCollection)
+    {
+        //Initializing DataTable and Filtered Object Collection
         DataTable dt = new DataTable();
         List<object> filteredObjects = new List<object>();
 
-        foreach (string property in filteredProperties) { 
-        
-            dt.Columns.Add(property);
 
+        //Adding Columns based on the filtered properties
+        foreach (string property in filteredProperties)
+        {
+            dt.Columns.Add(property);
         }
 
-
-
-
-        foreach (Factoid factoid in factoids) {
+        //Adding Factoid Properties depending on their Condition
+        foreach (Factoid factoid in factoidCollection)
+        {
 
             filteredObjects.Clear();
 
+
             foreach (string prop in filteredProperties)
             {
+
 
                 if (prop == "id")
                 {
@@ -360,11 +151,12 @@ public class MainViewModel : ViewModelBase
 
                 if (prop == "name")
                 {
-                    if(factoid.name.Contains(","))
+                    if (factoid.name.Contains(","))
                     {
                         string filteredString = factoid.name.Replace(",", "");
                         filteredObjects.Add(filteredString);
-                    } else
+                    }
+                    else
                     {
                         filteredObjects.Add(factoid.name);
                     }
@@ -387,10 +179,14 @@ public class MainViewModel : ViewModelBase
                     filteredObjects.Add(factoid.modified_by);
                 }
 
-
-
-
-
+                if (prop == "statements[0].id" && factoid.has_statements.Count > 0)
+                {
+                    filteredObjects.Add(factoid.has_statements[0].id);
+                }
+                if (prop == "statements[0].name" && factoid.has_statements.Count > 0)
+                {
+                    filteredObjects.Add(factoid.has_statements[0].name);
+                }
                 if (prop == "statements[0].__object_type__" && factoid.has_statements.Count > 0)
                 {
                     filteredObjects.Add(factoid.has_statements[0].__object_type__);
@@ -400,13 +196,25 @@ public class MainViewModel : ViewModelBase
                     filteredObjects.Add(factoid.has_statements[0].start_date_written);
                 }
 
+
+
+                if (prop == "Handlung_ausgeführt_von" && factoid.has_statements.Count > 0)
+                {
+                    if( factoid.has_statements[0].Handlung_ausgeführt_von != null)
+                    filteredObjects.Add(factoid.has_statements[0].Handlung_ausgeführt_von[0].label);
+                }
+                if (prop == "Ort_der_Handlung" && factoid.has_statements.Count > 0)
+                {
+                    if (factoid.has_statements[0].Ort_der_Handlung != null)
+                        filteredObjects.Add(factoid.has_statements[0].Ort_der_Handlung[0].label);
+                }
+
             }
 
-            dt.Rows.Add(filteredObjects.ToArray());
-        
-        }
 
-       // debugText += nameof(factoids[0].has_statements[0].Ausführende[0]);
+            dt.Rows.Add(filteredObjects.ToArray());
+
+        }
 
         return dt;
 
@@ -414,20 +222,178 @@ public class MainViewModel : ViewModelBase
 
 
 
+    //UI Update from Filter settings 
+    public async void UpdateTableFilter()
+    {
 
+
+        tableColumns.Clear();
+
+        foreach (TableFilter filter in tableFilters)
+        {
+            if (filter.enabled == true)
+            {
+                tableColumns.Add(filter.name);
+            }
+
+        }
+
+        tableData = constructDataTable(tableColumns, factoids);
+
+
+        gridDataTable = tableData;
+        dataView = tableData.DefaultView;
+
+
+        TableDataToTreeGrid(tableData);
+
+    }
+
+
+
+
+    //Helper Function to convert the DataTable Data into a usable TreeGrid format.
+    public void TableDataToTreeGrid(DataTable dt)
+    {
+        Columns.Clear();
+
+        //Map columns from the datatable to a usable format
+        foreach (DataColumn col in dt.Columns)
+        {
+            Columns.Add(col.ColumnName);
+        }
+
+
+        //Cast Rows to DataRows
+        var rows = dt.Rows.Cast<DataRow>()
+            .Select(row => row.ItemArray.Select(cell => cell?.ToString() ?? "").ToList())
+            .ToList();
+
+        //Convert into Dynamic Row
+        var items = rows.Select(r => new DynamicRow(r)).ToList();
+
+
+        //Fill Columns
+        var columns = Columns
+                .Select((header, index) => new TextColumn<DynamicRow, string>(
+                    header,
+                    row => row.Values[index]))
+                .ToList<IColumn<DynamicRow>>();
+
+
+        //Initialize UI Binding
+        GridSource = new FlatTreeDataGridSource<DynamicRow>(items)
+        {
+            Columns = { }
+        };
+
+        //Populate Grid
+        foreach (var col in columns)
+            ((FlatTreeDataGridSource<DynamicRow>)GridSource).Columns.Add(col);
+    }
+
+
+    #endregion
+
+
+
+    // Regex Querying function 
+    public void LookupFilter()
+    {
+        factoids = baseFactoids;
+        filteredCollection.Clear();
+
+        string query = debugText;
+
+
+        foreach (Factoid factoid in factoids)
+        {
+            if (Regex.IsMatch(factoid.name, query))
+            {
+
+                filteredCollection.Add(factoid);
+            }
+        }
+
+        factoids = filteredCollection;
+        UpdateTableFilter();
+    }
+
+
+
+    public void removeColumn()
+    {
+
+        debugText += columnNameSelected;
+
+        foreach (TableFilter filter in tableFilters)
+        {
+            if(filter.name == columnNameSelected)
+            {
+                filter.enabled = false;
+            }
+
+        }
+
+        UpdateTableFilter();
+
+    }
+
+
+    public void addColumn()
+    {
+
+        debugText += columnNameSelected;
+
+        foreach (TableFilter filter in tableFilters)
+        {
+            if (filter.name == columnNameSelected)
+            {
+                filter.enabled = true;
+            }
+
+        }
+
+        UpdateTableFilter();
+
+    }
+
+    public async void initializeFilters()
+    {
+
+        tableFilters = await JsonParse.ParseJson<TableFilter>("C:\\Users\\luwa0\\Desktop\\Code\\tableFilters.json");
+
+        foreach (TableFilter filter in tableFilters)
+        {
+           AvailableColumns.Add(filter.name);
+        }
+    }
+
+    #region Commands
+
+    public ICommand updateTableDataCommand { get; }
+    public ICommand applyQueryCommand { get; }
+
+    public ICommand jsonExportCommand { get; }
+
+    public ICommand csvExportCommand { get; }
+
+    public ICommand parseCommand { get; }
+
+    public ICommand lookupFilterCmd { get; }
+
+    public ICommand removeColumnCommand { get; }
+
+    public ICommand addColumnCommand { get; }
+
+
+
+    #endregion
+
+    //Class and Command Initialization
     public MainViewModel() {
 
         parseCommand = ReactiveCommand.Create(() => {getJson();});
-
-        nextEntry = ReactiveCommand.Create(() => {selectNextEntry();});
-
-        previousEntry = ReactiveCommand.Create(() => { selectPreviousEntry();});
-
-        nextStatement = ReactiveCommand.Create(() => { selectNextStatement();});
-
-        previousStatement = ReactiveCommand.Create(() => { selectPreviousStatement();});    
-
-        jsonIndexChange = ReactiveCommand.Create(() => {  updateJsonIndex(); });
 
         lookupFilterCmd = ReactiveCommand.Create(() => { LookupFilter(); }); 
 
@@ -435,7 +401,15 @@ public class MainViewModel : ViewModelBase
 
         csvExportCommand = ReactiveCommand.Create(() => { exportCsv(); });
 
+        updateTableDataCommand = ReactiveCommand.Create(() => {UpdateTableFilter();});
+
+        applyQueryCommand = ReactiveCommand.Create(() => {LookupFilter();});
+
+        removeColumnCommand = ReactiveCommand.Create(() => {removeColumn();});
+
+        addColumnCommand = ReactiveCommand.Create(() => { addColumn(); });
+
+        initializeFilters();
+
     }
-
-
 }

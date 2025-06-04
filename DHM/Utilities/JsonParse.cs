@@ -9,11 +9,12 @@ using System.IO;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 
+
 namespace DHM.Utilities
 {
     public static class JsonParse
     {
-        public static async Task<ObservableCollection<Factoid>> ParseJson(string path) {
+        public static async Task<ObservableCollection<T>> ParseJson<T>(string path) {
 
 
             var json = await File.ReadAllTextAsync(path, new UTF8Encoding(false));
@@ -21,7 +22,7 @@ namespace DHM.Utilities
 
             try
             {
-                ObservableCollection<Factoid>? factoids = JsonSerializer.Deserialize<ObservableCollection<Factoid>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                ObservableCollection<T>? factoids = JsonSerializer.Deserialize<ObservableCollection<T>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 return factoids;
             }
             catch (Exception parseError)
