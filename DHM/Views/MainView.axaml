@@ -64,7 +64,21 @@
     <Button Command="{Binding nextStatement}">Next Statement</Button>
     <Button Command="{Binding previousStatement}">Previous Statement</Button>
 
+    
 
+    <DataGrid
+      Height="300"
+      ItemsSource="{Binding Items} "
+      AutoGenerateColumns="True"
+      BorderThickness="1"
+      BorderBrush="White"
+      CanUserReorderColumns="True"
+      CanUserResizeColumns="True"
+      Name="fDataGrid"
+      >
+      
+    </DataGrid>
+    
 
 
     <DataGrid Height="600"

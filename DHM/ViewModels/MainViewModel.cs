@@ -16,6 +16,17 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Data;
+using Avalonia.Collections;
+
+
+using ReactiveUI;
+using System.ComponentModel;
+using System.Dynamic;
+using Avalonia.Data;
+using System.Reactive;
+using System.Threading.Tasks;
+using Avalonia;
+
 
 
 namespace DHM.ViewModels;
@@ -74,13 +85,17 @@ public class MainViewModel : ViewModelBase
 
     [Reactive] public int cboSelectedItem { get; set; }
 
+    [Reactive] public DataTable gridDataTable { get; set; }
+
+    [Reactive] public IDataGridCollectionView collectionView { get; set; }
+
 
     private int _cboSelect;
 
     public int cboSelect
     {
         get => _cboSelect;
-        set  {
+        set {
             this.RaiseAndSetIfChanged(ref _cboSelect, value);
             cboUpdateJsonIndex();
             //UpdateJsonDisplay();
@@ -93,10 +108,10 @@ public class MainViewModel : ViewModelBase
     public ICommand nextEntry { get; }
     public ICommand previousEntry { get; }
 
-    public ICommand nextStatement { get; }  
-    public ICommand previousStatement { get; }  
+    public ICommand nextStatement { get; }
+    public ICommand previousStatement { get; }
 
-    public ICommand jsonIndexChange { get; }    
+    public ICommand jsonIndexChange { get; }
 
     public ICommand lookupFilterCmd { get; }
 
@@ -114,7 +129,7 @@ public class MainViewModel : ViewModelBase
 
 
 
-       // factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Code Projects\\jsonParse\\jsonParse\\Models\\factoidfull.json");
+        // factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Code Projects\\jsonParse\\jsonParse\\Models\\factoidfull.json");
         factoids = await JsonParse.ParseJson("C:\\Users\\luwa0\\Documents\\Coding\\jsonParse\\jsonParse\\Models\\factoidfull.json");
         UpdateJsonDisplay();
         parseMessage = "Sucessfully Parsed JSON with " + factoids.Count.ToString() + " Entries";
@@ -125,9 +140,9 @@ public class MainViewModel : ViewModelBase
     {
         statementIndex = 0;
         jsonObjectIndex++;
-        if (jsonObjectIndex >= factoids.Count) { jsonObjectIndex = factoids.Count -1; }
+        if (jsonObjectIndex >= factoids.Count) { jsonObjectIndex = factoids.Count - 1; }
 
-        UpdateJsonDisplay();      
+        UpdateJsonDisplay();
     }
 
 
@@ -135,7 +150,7 @@ public class MainViewModel : ViewModelBase
 
         statementIndex = 0;
         jsonObjectIndex--;
-        if (jsonObjectIndex < 0 ) { jsonObjectIndex = 0; }
+        if (jsonObjectIndex < 0) { jsonObjectIndex = 0; }
 
         UpdateJsonDisplay();
     }
@@ -143,29 +158,29 @@ public class MainViewModel : ViewModelBase
 
     public void selectNextStatement() {
 
-        if (statementIndex < factoids[jsonObjectIndex].has_statements.Count -1) {
+        if (statementIndex < factoids[jsonObjectIndex].has_statements.Count - 1) {
             statementIndex++;
             UpdateJsonDisplay();
-          
-        }       
+
+        }
     }
 
 
     public void selectPreviousStatement()
     {
-        if(statementIndex > 0) { 
-            statementIndex--; 
-            UpdateJsonDisplay() ;     
+        if (statementIndex > 0) {
+            statementIndex--;
+            UpdateJsonDisplay();
         }
     }
 
     public void removeStatement() {
 
-        factoids[jsonObjectIndex].has_statements.RemoveAt(statementIndex);    
-    
+        factoids[jsonObjectIndex].has_statements.RemoveAt(statementIndex);
+
     }
 
-    public void updateJsonIndex () {
+    public void updateJsonIndex() {
 
         try
         {
@@ -195,7 +210,7 @@ public class MainViewModel : ViewModelBase
         foreach (Factoid factoid in factoids)
         {
 
-            if(Regex.IsMatch(factoid.name, query))
+            if (Regex.IsMatch(factoid.name, query))
             {
                 queryEntries.Add(count);
                 stringLength += count.ToString().Length;
@@ -205,7 +220,7 @@ public class MainViewModel : ViewModelBase
             count++;
         }
 
-        foreach(int entry in queryEntries)
+        foreach (int entry in queryEntries)
         {
             filterResults += entry + ", ";
         }
@@ -220,12 +235,12 @@ public class MainViewModel : ViewModelBase
 
     private void UpdateJsonDisplay()
     {
-        if(factoids != null)
+        if (factoids != null)
         {
             currentFactoid = factoids[jsonObjectIndex];
 
 
-            displayText = "ID: " + currentFactoid.id.ToString() + " | " + jsonObjectIndex.ToString() +  " / " + (factoids.Count -1).ToString();
+            displayText = "ID: " + currentFactoid.id.ToString() + " | " + jsonObjectIndex.ToString() + " / " + (factoids.Count - 1).ToString();
             objectName = "Name: " + currentFactoid.name;
             createdWhen = "Date Created: " + currentFactoid.created_when.ToString();
 
@@ -237,7 +252,7 @@ public class MainViewModel : ViewModelBase
             statementCount = "Has Statements: " + currentFactoid.has_statements.Count.ToString();
 
 
-            if(currentFactoid.has_statements.Count != 0)
+            if (currentFactoid.has_statements.Count != 0)
             {
                 statementObjectType = "Object Type " + currentFactoid.has_statements[statementIndex].__object_type__;
                 statementID = "ID: " + currentFactoid.has_statements[statementIndex].id.ToString();
@@ -286,22 +301,36 @@ public class MainViewModel : ViewModelBase
             serializer.Serialize(writer, factoids);
 
         }
-   
-       
+
+
     }
 
+    [Reactive] public DataView dataView { get; set; } = new DataView();
+
+    public Interaction<DataView, Unit> RequestDataGridUpdate = new Interaction<DataView, Unit>();
+
     public ICommand csvExportCommand { get; }
-    public void exportCsv()
+    public async void exportCsv()
     {
 
-        DataTable dt = constructDataTable(new List<string> {"name","created_by","created_when", "statements[0].__object_type__" });
+        DataTable dt = constructDataTable(new List<string> {"id", "name","created_by","created_when", "modified_when", "modified_by", "statements[0].__object_type__", "statements[0].start_date_written"});
 
         //CsvExport.ExportCsv();
+        //gridDataTable = dt;
+
+        gridDataTable = dt;
+
 
         CsvExport.DataTableToCsv(dt);
 
     }
 
+    [Reactive] public ObservableCollection<DataGridColumn> Columns { get; set; }
+    [Reactive] public ObservableCollection<dynamic> Items { get; set; }
+
+
+
+    //[Reactive] public DataGridCollectionView view { get; set; } = new DataGridCollectionView();
 
     public DataTable constructDataTable(List<string> filteredProperties)
     {
@@ -323,9 +352,23 @@ public class MainViewModel : ViewModelBase
 
             foreach (string prop in filteredProperties)
             {
+
+                if (prop == "id")
+                {
+                    filteredObjects.Add(factoid.id);
+                }
+
                 if (prop == "name")
                 {
-                    filteredObjects.Add(factoid.name);
+                    if(factoid.name.Contains(","))
+                    {
+                        string filteredString = factoid.name.Replace(",", "");
+                        filteredObjects.Add(filteredString);
+                    } else
+                    {
+                        filteredObjects.Add(factoid.name);
+                    }
+
                 }
                 if (prop == "created_by")
                 {
@@ -335,10 +378,28 @@ public class MainViewModel : ViewModelBase
                 {
                     filteredObjects.Add(factoid.created_when);
                 }
+                if (prop == "modified_when")
+                {
+                    filteredObjects.Add(factoid.modified_when);
+                }
+                if (prop == "modified_by")
+                {
+                    filteredObjects.Add(factoid.modified_by);
+                }
+
+
+
+
+
                 if (prop == "statements[0].__object_type__" && factoid.has_statements.Count > 0)
                 {
                     filteredObjects.Add(factoid.has_statements[0].__object_type__);
                 }
+                if (prop == "statements[0].start_date_written" && factoid.has_statements.Count > 0)
+                {
+                    filteredObjects.Add(factoid.has_statements[0].start_date_written);
+                }
+
             }
 
             dt.Rows.Add(filteredObjects.ToArray());
@@ -350,6 +411,9 @@ public class MainViewModel : ViewModelBase
         return dt;
 
     }
+
+
+
 
     public MainViewModel() {
 

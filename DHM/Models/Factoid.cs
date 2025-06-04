@@ -139,7 +139,7 @@ namespace DHM.Models
         public ProduktCertainty? Produkt { get; set; }
 
     }
-
+    
     public class Certainty
     {
         public string? notes { set; get; }
