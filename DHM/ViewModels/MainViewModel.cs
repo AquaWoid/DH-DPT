@@ -43,6 +43,19 @@ public class MainViewModel : ViewModelBase
 
     [Reactive] public string debugText { get; set; } = "Debug";
 
+    private string _filterText = "Input Query";
+
+    public string filterText {
+
+        get => _filterText;
+        set { 
+            
+            this.RaiseAndSetIfChanged(ref _filterText, value);
+            LookupFilter();
+       
+        }
+    }
+
     [Reactive] public ObservableCollection<Factoid>? factoids { get; set; }
 
 
@@ -80,6 +93,8 @@ public class MainViewModel : ViewModelBase
 
     [Reactive] public string columnNameSelected { get; set; }
 
+    private string filterOptionPath;
+
     #endregion
 
 
@@ -103,8 +118,15 @@ public class MainViewModel : ViewModelBase
     //Json Export Function. Exports the edited Factoid as well as the filter settings
     public void ExportJson()
     {
-        JsonExport.ExportJson<TableFilter>(tableFilters, "C:\\Users\\luwa0\\Desktop\\Code\\tableFilters.json");
-        JsonExport.ExportJson<Factoid>(factoids, "C:\\Users\\luwa0\\Desktop\\Code\\factoidsExport.json");
+        string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        string exportPath = Path.Combine(appDataPath, "DHM");
+        Directory.CreateDirectory(exportPath);
+
+        JsonExport.ExportJson<TableFilter>(tableFilters, Path.Combine(exportPath, "tableFilters.json"));
+
+
+
+        //JsonExport.ExportJson<Factoid>(factoids, "C:\\Users\\luwa0\\Desktop\\Code\\factoidsExport.json");
     }
 
     //CSV export. Look at the Utilities/CsvExport class for more info
@@ -240,7 +262,6 @@ public class MainViewModel : ViewModelBase
 
         tableData = constructDataTable(tableColumns, factoids);
 
-
         gridDataTable = tableData;
         dataView = tableData.DefaultView;
 
@@ -277,7 +298,10 @@ public class MainViewModel : ViewModelBase
         var columns = Columns
                 .Select((header, index) => new TextColumn<DynamicRow, string>(
                     header,
-                    row => row.Values[index]))
+                    row => row.Values[index]
+                    //(row, value) => row.Values[index] = value
+                    )
+                )
                 .ToList<IColumn<DynamicRow>>();
 
 
@@ -298,17 +322,20 @@ public class MainViewModel : ViewModelBase
 
 
     // Regex Querying function 
-    public void LookupFilter()
+    public async void LookupFilter()
     {
+        // Resetting Working Factoids to Initial Data
         factoids = baseFactoids;
+        // Re-Initializing the Filtered Collection
         filteredCollection.Clear();
 
-        string query = debugText;
+        string query = filterText;
 
 
         foreach (Factoid factoid in factoids)
         {
-            if (Regex.IsMatch(factoid.name, query))
+
+            if(await Task.Run(() => isValidRegex(filterText)) && Regex.IsMatch(factoid.name, filterText))
             {
 
                 filteredCollection.Add(factoid);
@@ -319,7 +346,19 @@ public class MainViewModel : ViewModelBase
         UpdateTableFilter();
     }
 
+    private async Task<bool> isValidRegex(string query)
+    {
+        try
+        {
+            Regex.Match("test", query);
+            return true;
+        }
+        catch (RegexParseException)
+        {
 
+            return false;
+        }
+    }
 
     public void removeColumn()
     {
@@ -360,8 +399,16 @@ public class MainViewModel : ViewModelBase
 
     public async void initializeFilters()
     {
+        try
+        {
+            tableFilters = await JsonParse.ParseJson<TableFilter>(Path.Join(OptionSerialization.GetOptionPath(), "tableFilters.json"));
+        }
+        catch (FileNotFoundException)
+        {
+            OptionSerialization.InitializeOptionSaveFile();
+            initializeFilters();
+        }
 
-        tableFilters = await JsonParse.ParseJson<TableFilter>("C:\\Users\\luwa0\\Desktop\\Code\\tableFilters.json");
 
         foreach (TableFilter filter in tableFilters)
         {

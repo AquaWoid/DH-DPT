@@ -15,22 +15,33 @@
 
   <StackPanel>
 
+    <Grid ColumnDefinitions="1*, 1*, 1* 1*" RowDefinitions="Auto, Auto, Auto, Auto" Margin="4">
+      <Button Command="{Binding parseCommand}" HorizontalAlignment="Center" Grid.Column="0">Parse Json</Button>
+      <Button Command="{Binding jsonExportCommand}" HorizontalAlignment="Center" Grid.Column="1">Export Json</Button>
+      <Button Command="{Binding csvExportCommand}" HorizontalAlignment="Center" Grid.Column="2">Export CSV</Button>
+      <Button Command="{Binding updateTableDataCommand}" HorizontalAlignment="Center" Grid.Column="3">Filter Table</Button>
+    </Grid>
+
+    <TextBlock HorizontalAlignment="Center">Columns</TextBlock>
+    <ListBox ItemsSource="{Binding AvailableColumns}" SelectedValue="{Binding columnNameSelected}" Width="300" HorizontalAlignment="Center" Height="100"></ListBox>
 
 
-    <Button Command="{Binding parseCommand}" HorizontalAlignment="Center">Parse Json</Button>
-    <Button Command="{Binding jsonExportCommand}" HorizontalAlignment="Center">Export Json</Button>
-    <Button Command="{Binding csvExportCommand}" HorizontalAlignment="Center">Export CSV</Button>
+    <Grid ColumnDefinitions="Auto, Auto" HorizontalAlignment="Center" Margin="5">
+      <Button Command="{Binding addColumnCommand}" HorizontalAlignment="Center" Grid.Column="0">Add</Button>
+      <Button Command="{Binding removeColumnCommand}" HorizontalAlignment="Center" Grid.Column="1">Remove</Button>     
+    </Grid>
 
 
-    <Button Command="{Binding updateTableDataCommand}" HorizontalAlignment="Center">Filter Table</Button>
 
+    <TextBox Text="{Binding filterText}"></TextBox>
 
-    <ListBox ItemsSource="{Binding AvailableColumns}" SelectedValue="{Binding columnNameSelected}" Width="300" HorizontalAlignment="Left" Height="100"></ListBox>
-    <Button Command="{Binding addColumnCommand}">Add Column</Button>
-    <Button Command="{Binding removeColumnCommand}">Remove Column</Button>
-    <TextBox Text="{Binding debugText}"></TextBox>
-    <Button Command="{Binding applyQueryCommand}" HorizontalAlignment="Left">Apply Query</Button>
+    <!-- 
     
+     <Button Command="{Binding applyQueryCommand}" HorizontalAlignment="Left">Apply Query</Button>
+       
+    
+    -->
+
     <TreeDataGrid Source="{Binding GridSource}" Height="900"></TreeDataGrid>
 
 

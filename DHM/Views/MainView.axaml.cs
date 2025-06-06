@@ -14,4 +14,7 @@ public partial class MainView : UserControl
         
     }
 
+    private void applyQueryCommand(object? sender, Avalonia.AvaloniaPropertyChangedEventArgs e)
+    {
+    }
 }

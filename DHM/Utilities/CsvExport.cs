@@ -31,6 +31,13 @@ namespace DHM.Utilities
                 sb.AppendLine(string.Join(",", fields));
             }
 
+
+            string docsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string exportPath = Path.Join(docsPath, "DHM Exports");
+            Directory.CreateDirectory(exportPath);
+
+            File.WriteAllText(Path.Join(exportPath, "export_" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".csv"), sb.ToString());
+
             File.WriteAllText("C:\\Users\\luwa0\\Desktop\\Code\\test.csv", sb.ToString());
 
         }
