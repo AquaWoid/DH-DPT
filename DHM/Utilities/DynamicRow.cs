@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace DHM.Utilities
 {
+    //Shortcut for List<string>
     public class DynamicRow : DynamicObject
     {
         public List<string> Values { get; }

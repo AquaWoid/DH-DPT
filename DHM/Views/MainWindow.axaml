@@ -9,4 +9,7 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="DHM">
         <views:MainView />
+
+
+  
 </Window>

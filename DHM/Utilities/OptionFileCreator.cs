@@ -41,7 +41,10 @@ namespace DHM.Utilities
             created_when.enabled = true;
 
             modified_by.name = "modified_by";
-            modified_when.enabled = true;
+            modified_by.enabled = true;
+
+            modified_when.name = "modified_when";
+            modified_when.enabled = true;   
 
             statements0id.name = "statements[0].id";
             statements0id.enabled = true;

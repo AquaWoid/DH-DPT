@@ -12,26 +12,6 @@ namespace DHM.Utilities
     public static class OptionSerialization
     {
 
-        public static void SaveOptions(ObservableCollection<TableFilter> filters) {
-
-            string exportPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DHM");
-            Directory.CreateDirectory(exportPath);
-
-
-            string saveFilePath = Path.Combine(exportPath, "tableFilters.json");
-
-            JsonExport.ExportJson(filters, saveFilePath);
-
-
-        }
-
-        public static string GetSavePath(string filename)
-        {
-            string exportPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DHM");
-            string saveFilePath = Path.Combine(exportPath, filename + ".json");
-
-            return saveFilePath;
-        }
 
         public static string GetOptionPath()
         {
@@ -41,9 +21,11 @@ namespace DHM.Utilities
             return exportPath;
         }
 
+        //Initializing tableFilters.json into AppData/DHM 
         public static void InitializeOptionSaveFile()
         {
             string exportPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DHM");
+
             Directory.CreateDirectory(exportPath);
 
 
@@ -63,15 +45,20 @@ namespace DHM.Utilities
             {
                 var tableFilters = await JsonParse.ParseJson<TableFilter>(Path.Join(exportPath, "tableFilters.json"));
             }
-            catch (FileNotFoundException)
+            catch (Exception ex)
             {
-                Directory.CreateDirectory(exportPath);
 
-                ObservableCollection<TableFilter> filters = OptionFileCreator.GetAvailableFilters();
+                if (ex is FileNotFoundException || ex is DirectoryNotFoundException)
+                {
+
+                    Directory.CreateDirectory(exportPath);
+
+                    ObservableCollection<TableFilter> filters = OptionFileCreator.GetAvailableFilters();
 
 
 
-                LoadOptions();
+                    LoadOptions();
+                }
 
             }
 

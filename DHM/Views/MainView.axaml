@@ -7,42 +7,76 @@
              x:Class="DHM.Views.MainView"
              x:DataType="vm:MainViewModel">
   <Design.DataContext>
-    <!-- This only sets the DataContext for the previewer in an IDE,
-         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
     <vm:MainViewModel />
   </Design.DataContext>
 
 
   <StackPanel>
 
-    <Grid ColumnDefinitions="1*, 1*, 1* 1*" RowDefinitions="Auto, Auto, Auto, Auto" Margin="4">
-      <Button Command="{Binding parseCommand}" HorizontalAlignment="Center" Grid.Column="0">Parse Json</Button>
-      <Button Command="{Binding jsonExportCommand}" HorizontalAlignment="Center" Grid.Column="1">Export Json</Button>
+    <Grid ColumnDefinitions="1*, 1*, 1*" RowDefinitions="Auto, Auto, Auto" Margin="20">
+      <Button Click="OpenFileDialog" HorizontalAlignment="Center" Grid.Column="0">Open Json</Button>
+      <CheckBox HorizontalAlignment="Center" Grid.Row="2"  IsChecked="{Binding filterDates}">Filter Dates?</CheckBox>
+      <Button Command="{Binding jsonExportCommand}" HorizontalAlignment="Center" Grid.Column="1">Save Filters</Button>
       <Button Command="{Binding csvExportCommand}" HorizontalAlignment="Center" Grid.Column="2">Export CSV</Button>
-      <Button Command="{Binding updateTableDataCommand}" HorizontalAlignment="Center" Grid.Column="3">Filter Table</Button>
-    </Grid>
 
-    <TextBlock HorizontalAlignment="Center">Columns</TextBlock>
-    <ListBox ItemsSource="{Binding AvailableColumns}" SelectedValue="{Binding columnNameSelected}" Width="300" HorizontalAlignment="Center" Height="100"></ListBox>
-
-
-    <Grid ColumnDefinitions="Auto, Auto" HorizontalAlignment="Center" Margin="5">
-      <Button Command="{Binding addColumnCommand}" HorizontalAlignment="Center" Grid.Column="0">Add</Button>
-      <Button Command="{Binding removeColumnCommand}" HorizontalAlignment="Center" Grid.Column="1">Remove</Button>     
     </Grid>
 
 
 
-    <TextBox Text="{Binding filterText}"></TextBox>
 
-    <!-- 
-    
-     <Button Command="{Binding applyQueryCommand}" HorizontalAlignment="Left">Apply Query</Button>
-       
-    
-    -->
 
-    <TreeDataGrid Source="{Binding GridSource}" Height="900"></TreeDataGrid>
+    <Grid ColumnDefinitions="1*, 1*" RowDefinitions="Auto,Auto">
+
+      <StackPanel>
+        <TextBlock Grid.Column="1" TextAlignment="Center">Available Columns</TextBlock>
+        <ListBox ItemsSource="{Binding AvailableColumns}" SelectedValue="{Binding columnNameSelected}" Width="300" HorizontalAlignment="Center" Height="200"></ListBox>
+        <Button Command="{Binding addColumnCommand}" HorizontalAlignment="Center" Grid.Column="0" Margin="4">Add</Button>
+      </StackPanel>
+
+      <StackPanel Grid.Column="2">
+        <TextBlock Grid.Column="1" TextAlignment="Center">Active Columns</TextBlock>
+        <ListBox ItemsSource="{Binding ActiveColumns}" SelectedValue="{Binding columnNameSelected}" Width="300" HorizontalAlignment="Center" Height="200"></ListBox>
+        <Button Command="{Binding removeColumnCommand}" HorizontalAlignment="Center" Grid.Column="1" Margin="4">Remove</Button>
+      </StackPanel>
+
+      
+    </Grid>
+    
+
+
+    <TextBox Margin="20" Text="{Binding filterText}"></TextBox>
+
+
+
+    <TreeDataGrid Source="{Binding GridSource}" Height="900" Margin="20"></TreeDataGrid>
+
+    <StackPanel.Styles>
+      <Style Selector="TextBlock">
+        <Setter Property="Foreground" Value="White"/>      
+      </Style>
+      <Style Selector="Button">
+        <Setter Property="Foreground" Value="White"/>
+      </Style>
+      <Style Selector="CheckBox">
+        <Setter Property="Foreground" Value="White"/>
+      </Style>
+      <Style Selector="TextBox">
+        <Setter Property="Foreground" Value="White"/>
+      </Style>
+      <Style Selector="StackPanel">
+        <Setter Property="Background" Value="#454545"/>
+      </Style>
+      <Style Selector="ListBox">
+        <Setter Property="Background" Value="#cccccc"/>
+      </Style>
+
+
+      <Style Selector="TreeDataGrid">
+        <Setter Property="Background" Value="#616060"/>
+      </Style>
+
+
+    </StackPanel.Styles>
 
 
 
