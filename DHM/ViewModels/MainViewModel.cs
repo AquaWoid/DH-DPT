@@ -18,6 +18,9 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using DynamicData;
 using System.Diagnostics;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Text;
 
 namespace DHM.ViewModels;
 
@@ -81,6 +84,16 @@ public class MainViewModel : ViewModelBase
     private string filterOptionPath;
 
     [Reactive] public bool filterDates { get; set; } = false;
+
+    [Reactive] public bool parseDynamic { get; set; } = false;
+
+
+    [Reactive] public int progressBarValue { get; set; } = 0;
+
+
+    [Reactive] public int progressBarMaximum { get; set; } = 100;
+
+    string dynamicPath;
 
     #endregion
 
@@ -147,7 +160,7 @@ public class MainViewModel : ViewModelBase
 
        // parseMessage = "Sucessfully Parsed JSON with " + factoids.Count.ToString() + " Entries";
 
-        UpdateTableFilter();
+       UpdateTableFilter();
     }
 
 
@@ -175,8 +188,58 @@ public class MainViewModel : ViewModelBase
 
     #region DataTable Handling
 
+
+    public async Task<DataTable> ConstructDynamicDatatable() {
+
+
+        var json = File.ReadAllText(dynamicPath, new UTF8Encoding(false));
+
+
+
+
+        JToken root = JToken.Parse(json);
+        JArray items = root.Type == JTokenType.Array ? (JArray)root : new JArray(root);
+
+        DataTable dt = new DataTable();
+
+        AvailableColumns.Clear();
+
+        progressBarMaximum = items.Count;
+
+        foreach (JToken item in items)
+        {
+            var flat = FlatJson.FlattenJToken(item);
+
+            // Add columns if not already present
+            foreach (var key in flat.Keys)
+            {
+                if (!dt.Columns.Contains(key)) {
+                    dt.Columns.Add(key, flat[key]?.GetType() ?? typeof(object));
+                    AvailableColumns.Add(key);
+                
+                }
+  
+            }
+
+            // Create row with values in column order
+            var row = dt.NewRow();
+            foreach (var kvp in flat)
+                row[kvp.Key] = kvp.Value ?? DBNull.Value;
+
+            dt.Rows.Add(row);
+            progressBarValue += 1;
+
+
+
+        }
+
+        return dt;  
+
+
+    }
+
     //Constructing the DataTable from the Factoid Collection
-    public DataTable constructDataTable(List<string> filteredProperties, ObservableCollection<Factoid> factoidCollection)
+    public async Task<DataTable> constructDataTable(List<string> filteredProperties, ObservableCollection<Factoid> factoidCollection)
     {
         //Initializing DataTable and Filtered Object Collection
         DataTable dt = new DataTable();
@@ -287,8 +350,19 @@ public class MainViewModel : ViewModelBase
 
         }
 
-        //Method Call to construct a DataTable from the class Collection
-        tableData = constructDataTable(tableColumns, factoids);
+
+
+
+        if (parseDynamic == true)
+        {
+            tableData = await ConstructDynamicDatatable();
+        }
+        else {
+            //Method Call to construct a DataTable from the class Collection
+            tableData = await constructDataTable(tableColumns, factoids);
+        }
+
+        //tableData = ConstructDynamicDatatable();
         TableDataToTreeGrid(tableData);
 
     }
@@ -464,6 +538,7 @@ public class MainViewModel : ViewModelBase
     //Is called from MainView.axaml.cs to redirect the path of the file dialog input
     public void receiveFileDialog(string path)
     {
+        dynamicPath = path;
         getJson(path);
     }
 

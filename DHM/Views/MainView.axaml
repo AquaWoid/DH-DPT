@@ -13,9 +13,16 @@
 
   <StackPanel>
 
+    <ProgressBar Minimum="0" Maximum="{Binding progressBarMaximum}" Value="{Binding progressBarValue}"></ProgressBar>
+
     <Grid ColumnDefinitions="1*, 1*, 1*" RowDefinitions="Auto, Auto, Auto" Margin="20">
+
+
+        <CheckBox HorizontalAlignment="Center" Grid.Row="1"  IsChecked="{Binding filterDates}">Filter Dates?</CheckBox>
+        <CheckBox HorizontalAlignment="Center" Grid.Row="2"  IsChecked="{Binding parseDynamic}">Parse Dynamic? (Experimental)</CheckBox>      
+
+      
       <Button Click="OpenFileDialog" HorizontalAlignment="Center" Grid.Column="0">Open Json</Button>
-      <CheckBox HorizontalAlignment="Center" Grid.Row="2"  IsChecked="{Binding filterDates}">Filter Dates?</CheckBox>
       <Button Command="{Binding jsonExportCommand}" HorizontalAlignment="Center" Grid.Column="1">Save Filters</Button>
       <Button Command="{Binding csvExportCommand}" HorizontalAlignment="Center" Grid.Column="2">Export CSV</Button>
 
