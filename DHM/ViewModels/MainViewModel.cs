@@ -15,12 +15,13 @@ using Avalonia.Data;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.Models.TreeDataGrid;
-using Avalonia.Controls.Primitives;
 using DynamicData;
 using System.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using System.Reflection.Metadata.Ecma335;
+
 
 namespace DHM.ViewModels;
 
@@ -28,10 +29,12 @@ public class MainViewModel : ViewModelBase
 {
     #region Variable Declarations
 
+    //Text bindings
     [Reactive] public string debugText { get; set; } = "Debug";
 
     private string _filterText = "Input Query";
 
+    //Regex Query Text Binding
     public string filterText {
 
         get => _filterText;
@@ -43,20 +46,16 @@ public class MainViewModel : ViewModelBase
         }
     }
 
+    //Factoid Collections
     [Reactive] public ObservableCollection<Factoid>? factoids { get; set; }
+
+    private ObservableCollection<Factoid> baseFactoids { get; set; }
 
 
     [Reactive] public ObservableCollection<Factoid>? filteredCollection { get; set; } = new ObservableCollection<Factoid>();
 
-
-    [Reactive] public string parseMessage { get; set; }
-
-
-    [Reactive] public DataTable gridDataTable { get; set; }
-
-
+    //Table Collections and Variables
     public ObservableCollection<TableFilter> tableFilters { get; set; } = new ObservableCollection<TableFilter>();
-
 
 
     List<string> tableColumns = new List<string>();
@@ -67,12 +66,7 @@ public class MainViewModel : ViewModelBase
 
     [Reactive] public ObservableCollection<string> Columns { get; set; } = new ObservableCollection<string> { };
 
-
     [Reactive] public ITreeDataGridSource GridSource { get; set; }
-
-
-    private ObservableCollection<Factoid> baseFactoids { get; set; }
-
 
     [Reactive] public ObservableCollection<string> AvailableColumns { get; set; } = new ObservableCollection<string>();
 
@@ -81,19 +75,20 @@ public class MainViewModel : ViewModelBase
 
     [Reactive] public string columnNameSelected { get; set; }
 
-    private string filterOptionPath;
-
+    //Toggles
     [Reactive] public bool filterDates { get; set; } = false;
 
     [Reactive] public bool parseDynamic { get; set; } = false;
 
-
+    //Progress Bar 
     [Reactive] public int progressBarValue { get; set; } = 0;
 
 
     [Reactive] public int progressBarMaximum { get; set; } = 100;
 
+    //Global Paths
     string dynamicPath;
+
 
     #endregion
 
@@ -103,10 +98,13 @@ public class MainViewModel : ViewModelBase
     //Initializes the Filter Config file into AppData/Roaming/DHM if there is none found. If file exists > Load into the TableFilter class. 
     public async void initializeFilters()
     {
+
+        //Checking if the file exists in AppData/Roaming/DHM
         try
         {
             tableFilters = await JsonParse.ParseJson<TableFilter>(Path.Join(OptionSerialization.GetOptionPath(), "tableFilters.json"));
         }
+        //IF not exist > Initialize file and directory. 
         catch (Exception ex)
         {
             if (ex is FileNotFoundException || ex is DirectoryNotFoundException)
@@ -119,23 +117,29 @@ public class MainViewModel : ViewModelBase
         //Checking if the filters loaded from the file are enabled
         foreach (TableFilter filter in tableFilters)
         {
-            //Adding to the AvailableColumns Observablecollection which is used to control which columns can be added to the DataTable
+            //Adding to the AvailableColumns Observablecollection that is used to control which columns can be added to the DataTable
             AvailableColumns.Add(filter.name);
 
+            //Adds filter to the ActiveColumns List (Binding for the UI ListBox) and calls the Column Sort function to match AvailableColumns
             if (filter.enabled == true)
             {
                 ActiveColumns.Add(filter.name);
                 SortActiveColumns();
             }
         }
+
+        //Initializing the selected filter to avoid erros while using the regex lookup. 
+        columnNameSelected = AvailableColumns[0];
+
     }
 
     //Entry function to pull data from the a json provided through the file dialog
     public async void getJson(string path)
     {
-
+        //Task call to parse input JSON as Factoid class
         factoids = await JsonParse.ParseJson<Factoid>(path);
 
+        //Filtering years out of the single start_date_written entries if true
         if (filterDates == true)
         {
             foreach (Factoid factoid in factoids)
@@ -145,21 +149,19 @@ public class MainViewModel : ViewModelBase
                     try
                     {
                         factoid.has_statements[0].start_date_written = Regex.Match(factoid.has_statements[0].start_date_written, "\\d{4}").Value;
-                        //filteredObjects.Add(extractYear(factoid.has_statements[0].start_date_written));
                     }
                     catch (Exception)
                     {
                         Debug.WriteLine("Couldn't find regex pattern");
-
                     }
                 }
             }
         }
 
+        //Applying factoid collection to the baseFactoids collection to draw data from it once filtering has happened to the factoid collection. 
         baseFactoids = factoids;
 
-       // parseMessage = "Sucessfully Parsed JSON with " + factoids.Count.ToString() + " Entries";
-
+       //UI Update Call
        UpdateTableFilter();
     }
 
@@ -168,19 +170,26 @@ public class MainViewModel : ViewModelBase
     //Json Export Function. Exports the tableFilters class collection into tablefilters.json. Directory: AppData/Roaming/DHM
     public void SaveConfig()
     {
-        string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        string exportPath = Path.Combine(appDataPath, "DHM");
+        string exportPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DHM");
         Directory.CreateDirectory(exportPath);
 
         JsonExport.ExportJson<TableFilter>(tableFilters, Path.Combine(exportPath, "tableFilters.json"));
-
-        //JsonExport.ExportJson<Factoid>(factoids, "C:\\Users\\luwa0\\Desktop\\Code\\factoidsExport.json");
     }
 
     //CSV export. Look at the Utilities/CsvExport class for more info
     public async void exportCsv()
     {
         CsvExport.DataTableToCsv(tableData);
+    }
+
+    //JSON Export Function. Exports the current DataTable Data into a JSON file under Documents/DHM Exports. Calls an export function in the JsonExport class (see JsonExport.cs). 
+    public void exportDataTableToJSON()
+    {
+        string docsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        string exportPath = Path.Join(docsPath, "DHM Exports");
+        Directory.CreateDirectory(exportPath);
+
+        JsonExport.DataTableToJson(tableData, exportPath);
     }
 
 
@@ -191,23 +200,32 @@ public class MainViewModel : ViewModelBase
 
     public async Task<DataTable> ConstructDynamicDatatable() {
 
-
+        //Pulling file contents from File Dialog Input
         var json = File.ReadAllText(dynamicPath, new UTF8Encoding(false));
 
-
-
-
+        //JSON root token creation
         JToken root = JToken.Parse(json);
+
+        //Checking if root is of type JArray and apply a Jarray cast of root to items
         JArray items = root.Type == JTokenType.Array ? (JArray)root : new JArray(root);
 
+
+        //Datatable initialization
         DataTable dt = new DataTable();
 
+
+        //Clearing Columns
         AvailableColumns.Clear();
 
+
+        //Setting Progress bar max length
         progressBarMaximum = items.Count;
 
+
+        //Iterating through the json array
         foreach (JToken item in items)
         {
+            //Using the FlatJson utility class to 
             var flat = FlatJson.FlattenJToken(item);
 
             // Add columns if not already present
@@ -223,14 +241,13 @@ public class MainViewModel : ViewModelBase
 
             // Create row with values in column order
             var row = dt.NewRow();
+            //For each Key Value Pair
             foreach (var kvp in flat)
                 row[kvp.Key] = kvp.Value ?? DBNull.Value;
-
+            //Add Row
             dt.Rows.Add(row);
+            //Advance Progress Bar 
             progressBarValue += 1;
-
-
-
         }
 
         return dt;  
@@ -261,13 +278,10 @@ public class MainViewModel : ViewModelBase
             //Mapping the parsed class variables to the filtered collection
             foreach (string prop in filteredProperties)
             {
-
-
                 if (prop == "id")
                 {
                     filteredObjects.Add(factoid.id);
                 }
-
                 if (prop == "name")
                 {
 
@@ -331,16 +345,18 @@ public class MainViewModel : ViewModelBase
 
         }
 
+
         return dt;
 
     }
 
 
-    //#1 UI Update from Filter settings 
+    //#1 UI Update Main Function 
     public async void UpdateTableFilter()
     {
         tableColumns.Clear();
 
+        //Initializing columns based on selected filters
         foreach (TableFilter filter in tableFilters)
         {
             if (filter.enabled == true)
@@ -350,15 +366,14 @@ public class MainViewModel : ViewModelBase
 
         }
 
-
-
-
+        //Bound to the "Parse Dynamic?" CheckBox
         if (parseDynamic == true)
         {
+            //Task call to construct Dynamic DataTable from the parsed JSON file
             tableData = await ConstructDynamicDatatable();
         }
         else {
-            //Method Call to construct a DataTable from the class Collection
+            //Task Call to construct a DataTable from the class Collection
             tableData = await constructDataTable(tableColumns, factoids);
         }
 
@@ -421,13 +436,12 @@ public class MainViewModel : ViewModelBase
         // Re-Initializing the Filtered Collection
         filteredCollection.Clear();
 
-        string query = filterText;
 
         //Check for Valid Regex query and add the matching results to the filtered collection which is transfered to the base object that is bound to the UI 
         foreach (Factoid factoid in factoids)
         {
 
-            if (await Task.Run(() => isValidRegex(filterText)) && Regex.IsMatch(factoid.name, filterText))
+            if (await Task.Run(() => isValidRegex(filterText)) && Regex.IsMatch(getActiveQuerySelection(factoid).ToString(), filterText))
             {
 
                 filteredCollection.Add(factoid);
@@ -436,6 +450,68 @@ public class MainViewModel : ViewModelBase
 
         factoids = filteredCollection;
         UpdateTableFilter();
+    }
+
+    //Function to return the active query selection to the regex filter.
+    private object getActiveQuerySelection(Factoid factoid)
+    {
+        if(columnNameSelected == "id")
+        {
+            return factoid.id;
+        }
+        if (columnNameSelected == "name")
+        {
+            return factoid.name;
+        }
+        if (columnNameSelected == "created_by")
+        {
+            return factoid.created_by;
+        }
+        if (columnNameSelected == "created_when")
+        {
+            return factoid.created_when;
+        }
+        if (columnNameSelected == "modified_by")
+        {
+            return factoid.modified_by;
+        }
+        if (columnNameSelected == "modified_when")
+        {
+            return factoid.modified_when;
+        }
+
+
+        if (factoid.has_statements.Count > 0)
+        {
+
+            if (columnNameSelected == "statements[0].id" && factoid.has_statements.Count > 0)
+            {
+                return factoid.has_statements[0].id;
+            }
+            if (columnNameSelected == "statements[0].__object_type__" && factoid.has_statements.Count > 0)
+            {
+                return factoid.has_statements[0].__object_type__;
+            }
+            if (columnNameSelected == "statements[0].start_date_written" && factoid.has_statements[0].start_date_written != null)
+            {
+                return factoid.has_statements[0].start_date_written;
+            }
+
+
+            //TODO: Both don't seem to work properly for now, but should be theoreticaly. 
+            if (columnNameSelected == "Handlung_ausgeführt_von" && factoid.has_statements[0].Handlung_ausgeführt_von != null)
+            {
+                return factoid.has_statements[0].Handlung_ausgeführt_von;
+            }
+            if (columnNameSelected == "Ort_der_Handlung" && factoid.has_statements[0].Ort_der_Handlung != null)
+            {
+                return factoid.has_statements[0].Ort_der_Handlung;
+            }
+
+        }
+
+        return new Factoid();
+
     }
 
 
@@ -493,10 +569,8 @@ public class MainViewModel : ViewModelBase
     {
         if (input.Contains(","))
         {
-
             string filteredString = input.Replace(",", "");
             return filteredString;
-
         }
         else
         {
@@ -546,20 +620,20 @@ public class MainViewModel : ViewModelBase
 
     #region Commands
 
-    public ICommand updateTableDataCommand { get; }
+
     public ICommand applyQueryCommand { get; }
 
     public ICommand jsonExportCommand { get; }
 
     public ICommand csvExportCommand { get; }
 
-    public ICommand parseCommand { get; }
-
     public ICommand lookupFilterCmd { get; }
 
     public ICommand removeColumnCommand { get; }
 
     public ICommand addColumnCommand { get; }
+    public ICommand exportJsonCommand { get; }
+
 
 
 
@@ -569,21 +643,19 @@ public class MainViewModel : ViewModelBase
     //Class and Command Initialization
     public MainViewModel() {
 
-      //  parseCommand = ReactiveCommand.Create(() => {getJson();});
-
         lookupFilterCmd = ReactiveCommand.Create(() => { LookupFilter(); }); 
 
         jsonExportCommand = ReactiveCommand.Create(() => { SaveConfig(); });
 
         csvExportCommand = ReactiveCommand.Create(() => { exportCsv(); });
 
-      //  updateTableDataCommand = ReactiveCommand.Create(() => {UpdateTableFilter();});
-
         applyQueryCommand = ReactiveCommand.Create(() => {LookupFilter();});
 
         removeColumnCommand = ReactiveCommand.Create(() => {removeColumn();});
 
         addColumnCommand = ReactiveCommand.Create(() => { addColumn(); });
+
+        exportJsonCommand = ReactiveCommand.Create(() => { exportDataTableToJSON(); });
 
         initializeFilters();
 

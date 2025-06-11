@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:DHM.ViewModels"
+             xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
              x:Class="DHM.Views.MainView"
              x:DataType="vm:MainViewModel">
@@ -15,7 +16,9 @@
 
     <ProgressBar Minimum="0" Maximum="{Binding progressBarMaximum}" Value="{Binding progressBarValue}"></ProgressBar>
 
-    <Grid ColumnDefinitions="1*, 1*, 1*" RowDefinitions="Auto, Auto, Auto" Margin="20">
+    <TextBlock Text="{Binding columnNameSelected}"></TextBlock>
+
+    <Grid ColumnDefinitions="1*, 1*, 1*,1*" RowDefinitions="Auto, Auto, Auto, Auto" Margin="20">
 
 
         <CheckBox HorizontalAlignment="Center" Grid.Row="1"  IsChecked="{Binding filterDates}">Filter Dates?</CheckBox>
@@ -26,10 +29,9 @@
       <Button Command="{Binding jsonExportCommand}" HorizontalAlignment="Center" Grid.Column="1">Save Filters</Button>
       <Button Command="{Binding csvExportCommand}" HorizontalAlignment="Center" Grid.Column="2">Export CSV</Button>
 
+      <Button Command="{Binding exportJsonCommand}" HorizontalAlignment="Center" Grid.Column="3">Export JSON</Button>
+
     </Grid>
-
-
-
 
 
     <Grid ColumnDefinitions="1*, 1*" RowDefinitions="Auto,Auto">

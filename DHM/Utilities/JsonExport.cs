@@ -1,8 +1,10 @@
 ﻿using DHM.Models;
+using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -26,6 +28,26 @@ namespace DHM.Utilities
 
             }
 
+
+        }
+
+
+        public static void DataTableToJson(DataTable dt, string path) {
+
+
+            string result = JsonConvert.SerializeObject(dt);
+
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.NullValueHandling = NullValueHandling.Ignore;
+
+            using (StreamWriter sw = new StreamWriter(Path.Join(path, "export_" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".json")))
+            using (JsonTextWriter writer = new JsonTextWriter(sw))
+            {
+                writer.Formatting = Formatting.Indented;
+                serializer.Serialize(writer, dt);
+
+
+            }
 
         }
     }
