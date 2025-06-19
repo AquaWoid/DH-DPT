@@ -11,28 +11,23 @@
     <vm:MainViewModel />
   </Design.DataContext>
 
-
   <StackPanel>
 
     <ProgressBar Minimum="0" Maximum="{Binding progressBarMaximum}" Value="{Binding progressBarValue}"></ProgressBar>
 
-    <TextBlock Text="{Binding columnNameSelected}"></TextBlock>
+    <Grid ColumnDefinitions="1*, 1*, 1*,1*, 1*" RowDefinitions="Auto, Auto, Auto, Auto, Auto" Margin="20">
 
-    <Grid ColumnDefinitions="1*, 1*, 1*,1*" RowDefinitions="Auto, Auto, Auto, Auto" Margin="20">
-
-
-        <CheckBox HorizontalAlignment="Center" Grid.Row="1"  IsChecked="{Binding filterDates}">Filter Dates?</CheckBox>
-        <CheckBox HorizontalAlignment="Center" Grid.Row="2"  IsChecked="{Binding parseDynamic}">Parse Dynamic? (Experimental)</CheckBox>      
-
+      <CheckBox HorizontalAlignment="Center" Grid.Row="1"  IsChecked="{Binding filterDates}">Filter Dates?</CheckBox>
+      <CheckBox HorizontalAlignment="Center" Grid.Row="2"  IsChecked="{Binding parseDynamic}">Parse Dynamic? (Experimental)</CheckBox>      
       
       <Button Click="OpenFileDialog" HorizontalAlignment="Center" Grid.Column="0">Open Json</Button>
       <Button Command="{Binding jsonExportCommand}" HorizontalAlignment="Center" Grid.Column="1">Save Filters</Button>
       <Button Command="{Binding csvExportCommand}" HorizontalAlignment="Center" Grid.Column="2">Export CSV</Button>
 
       <Button Command="{Binding exportJsonCommand}" HorizontalAlignment="Center" Grid.Column="3">Export JSON</Button>
+      <Button Command="{Binding getEntryCountsCommand}" HorizontalAlignment="Center" Grid.Column="4">Get Entry Counts</Button>
 
     </Grid>
-
 
     <Grid ColumnDefinitions="1*, 1*" RowDefinitions="Auto,Auto">
 
@@ -48,15 +43,10 @@
         <Button Command="{Binding removeColumnCommand}" HorizontalAlignment="Center" Grid.Column="1" Margin="4">Remove</Button>
       </StackPanel>
 
-      
     </Grid>
     
 
-
     <TextBox Margin="20" Text="{Binding filterText}"></TextBox>
-
-
-
     <TreeDataGrid Source="{Binding GridSource}" Height="900" Margin="20"></TreeDataGrid>
 
     <StackPanel.Styles>
@@ -78,18 +68,9 @@
       <Style Selector="ListBox">
         <Setter Property="Background" Value="#cccccc"/>
       </Style>
-
-
       <Style Selector="TreeDataGrid">
         <Setter Property="Background" Value="#616060"/>
       </Style>
-
-
     </StackPanel.Styles>
-
-
-
   </StackPanel>
-  
-
 </UserControl>

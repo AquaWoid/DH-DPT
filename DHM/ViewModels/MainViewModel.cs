@@ -94,7 +94,6 @@ public class MainViewModel : ViewModelBase
 
     #region Data Handling
 
-
     //Initializes the Filter Config file into AppData/Roaming/DHM if there is none found. If file exists > Load into the TableFilter class. 
     public async void initializeFilters()
     {
@@ -165,8 +164,6 @@ public class MainViewModel : ViewModelBase
        UpdateTableFilter();
     }
 
-
-
     //Json Export Function. Exports the tableFilters class collection into tablefilters.json. Directory: AppData/Roaming/DHM
     public void SaveConfig()
     {
@@ -192,11 +189,9 @@ public class MainViewModel : ViewModelBase
         JsonExport.DataTableToJson(tableData, exportPath);
     }
 
-
     #endregion
 
     #region DataTable Handling
-
 
     public async Task<DataTable> ConstructDynamicDatatable() {
 
@@ -350,8 +345,7 @@ public class MainViewModel : ViewModelBase
 
     }
 
-
-    //#1 UI Update Main Function 
+    //UI Update Main Function 
     public async void UpdateTableFilter()
     {
         tableColumns.Clear();
@@ -425,8 +419,6 @@ public class MainViewModel : ViewModelBase
         foreach (var col in columns)
             ((FlatTreeDataGridSource<DynamicRow>)GridSource).Columns.Add(col);
     }
-
-
 
     // Regex Querying function 
     public async void LookupFilter()
@@ -514,7 +506,6 @@ public class MainViewModel : ViewModelBase
 
     }
 
-
     //Removes column from the current filtering and updates all filters
     public void removeColumn()
     {
@@ -559,10 +550,75 @@ public class MainViewModel : ViewModelBase
 
     }
 
-
     #endregion
 
     #region Helper Functions 
+
+    public void getEntryCounts()
+    {
+        DataTable dt = tableData;
+
+        Dictionary<string, int> entryCounts = new Dictionary<string, int>();
+
+        // Initialize count for each column
+        foreach (DataColumn column in dt.Columns)
+        {
+            entryCounts[column.ColumnName] = 0;
+        }
+
+        // Count non-empty cells per column
+        foreach (DataRow row in dt.Rows)
+        {
+            foreach (DataColumn column in dt.Columns)
+            {
+                object value = row[column];
+
+                if (value != null && value != DBNull.Value && !string.IsNullOrWhiteSpace(value.ToString()))
+                {
+                    entryCounts[column.ColumnName]++;
+                }
+            }
+        }
+
+
+        Dictionary<string, string> entries = new Dictionary<string, string>();
+
+        foreach (DataRow row in dt.Rows)
+        {
+            {
+                if (row[0].ToString().Contains("Peter") && row[0] != string.Empty)
+                {
+                    entries[row[1].ToString()] = row[0].ToString();
+                }
+
+            }
+        }
+
+        DataTable entryResultTable = new DataTable();
+
+
+
+        entryResultTable.Columns.Add("Property");
+        entryResultTable.Columns.Add("Count");
+
+        // Print results
+        foreach (var kvp in entryCounts.OrderByDescending(key => key.Value))
+        {
+            entryResultTable.Rows.Add(kvp.Key, kvp.Value);
+            //  Console.WriteLine($"{kvp.Key}: {kvp.Value} non-empty cells");
+        }
+
+
+        foreach (DataRow row in entryResultTable.Rows)
+        {
+            Console.WriteLine($"{row[0]} Count:  {row[1]}");
+        }
+
+       // return entryResultTable;
+
+        TableDataToTreeGrid( entryResultTable );
+        CsvExport.DataTableToCsv( entryResultTable );
+    }
 
     //Text filtering function to remove unwanted commas to prevent breaking csv parsing
     private string CheckAndRemoveCommas(string input)
@@ -577,8 +633,6 @@ public class MainViewModel : ViewModelBase
             return input;
         }
     }
-
-
 
     //Regex Validation Function to avoid Parse Errors
     private async Task<bool> isValidRegex(string query)
@@ -620,22 +674,14 @@ public class MainViewModel : ViewModelBase
 
     #region Commands
 
-
     public ICommand applyQueryCommand { get; }
-
     public ICommand jsonExportCommand { get; }
-
     public ICommand csvExportCommand { get; }
-
     public ICommand lookupFilterCmd { get; }
-
     public ICommand removeColumnCommand { get; }
-
     public ICommand addColumnCommand { get; }
     public ICommand exportJsonCommand { get; }
-
-
-
+    public ICommand getEntryCountsCommand { get; }
 
     #endregion
 
@@ -656,6 +702,8 @@ public class MainViewModel : ViewModelBase
         addColumnCommand = ReactiveCommand.Create(() => { addColumn(); });
 
         exportJsonCommand = ReactiveCommand.Create(() => { exportDataTableToJSON(); });
+
+        getEntryCountsCommand = ReactiveCommand.Create(() => { getEntryCounts(); });
 
         initializeFilters();
 

@@ -9,16 +9,12 @@ namespace DHM.Models
         public int? id { get; set; }
         public Review? review { get; set; }
         public string? name { get; set; }
-
         public Source? source { get; set; }
-
         public List<HasStatements>? has_statements { get; set; }
-
         public string? created_by { get; set; }
         public DateTime? created_when { get; set; }
         public string? modified_by { get; set; }
         public DateTime? modified_when { get; set; }
-
     }
 
     public class HasStatements
@@ -31,31 +27,21 @@ namespace DHM.Models
         public string? notes { get; set; }
         public string? internal_notes { get; set; }
         public bool head_statement { get; set; }
-
         public Certainty? certainty { get; set; }
-
         public CertaintyValues? certainty_values { get; set; }
-
         [JsonPropertyName("Handlung_ausgeführt_von")]
         public List<HandlungAusgefuehrtVon>? Handlung_ausgeführt_von { get; set; }
-
         [JsonPropertyName("Ort_der_Handlung")]
         public List<OrtDerHandlung>? Ort_der_Handlung { get; set; }
-
         [JsonPropertyName("ausgeführte_Tätigkeit")]
         public List<AusgefuehrteTaetigkeit>? ausgeführte_Tätigkeit { get; set; }
-
         [JsonPropertyName("Ausführende")]
         public List<Ausfuehrende>? Ausführende { get; set; }
-
         public List<Produkt>? Produkt { get; set; }
         public List<GenanntePerson>? genannte_Person { get; set; }
-
         public List<Statement>? Übertragenes_Objekt { get; set; }
         public List<Statement>? vorbesitzer { get; set; }
         public List<Statement>? empfänger { get; set; }
-
-
         public List<Person>? person { get; set; }
 
         public string? gender { get; set; }
